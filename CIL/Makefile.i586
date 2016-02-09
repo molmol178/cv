@@ -1,0 +1,203 @@
+#============================================================
+# CIL LIBRARIES MAKEING MAKEFILE
+#	author	: Takahiro Sugiyama
+#	date	: Project Start : 1992/04/01
+#	date	: from 1993/04/01
+#	date	: 1995/2/5
+# for Gateway2000 i586 -- Linux 1.1.59
+#============================================================
+
+
+
+#============================================================
+# BOOTS DEFINE
+#============================================================
+CC = cc
+
+CFLAGS = -O -I/usr/openwin/include -Iinclude -D__CIL_BIG_EDIAN__
+
+.c.o :
+	${CC} ${CFLAGS} -o $*.o -c $*.c
+
+RM	= rm -f
+AR	= ar cr
+ARSA	= ar clq
+RANLIB	= echo
+
+
+
+#============================================================
+# NAMES DEFINE
+#============================================================
+LIBNAME = cil
+CILREV = 1.0
+DEST = /home/abe/common/lib/i586
+
+CILLIBFN	= lib${LIBNAME}.a
+CILSOLIBFN	= lib${LIBNAME}.so.${CILREV}
+CILSALIBFN	= lib${LIBNAME}.sa.${CILREV}
+CILLIB		= lib/${CILLIBFN}
+CILSOLIB	= lib/${CILSOLIBFN}
+CILSALIB	= lib/${CILSALIBFN}
+CILLIBS		= ${CILLIB} #${CILSOLIB} ${CILSALIB}
+
+XCILLIBFN	= libX${LIBNAME}.a
+XCILSOLIBFN	= libX${LIBNAME}.so.${CILREV}
+XCILSALIBFN	= libX${LIBNAME}.sa.${CILREV}
+XCILLIB		= lib/${XCILLIBFN}
+XCILSOLIB	= lib/${XCILSOLIBFN}
+XCILSALIB	= lib/${XCILSALIBFN}
+XCILLIBS	= ${XCILLIB} #${XCILSOLIB} ${XCILSALIB}
+
+CILEXTLIBFN	= lib${LIBNAME}ext.a
+CILEXTSOLIBFN	= lib${LIBNAME}ext.so.${CILREV}
+CILEXTSALIBFN	= lib${LIBNAME}ext.sa.${CILREV}
+CILEXTLIB	= lib/${CILEXTLIBFN}
+CILEXTSOLIB	= lib/${CILEXTSOLIBFN}
+CILEXTSALIB	= lib/${CILEXTSALIBFN}
+CILEXTLIBS	= ${CILEXTLIB} #${CILEXTSOLIB} ${CILEXTSALIB}
+
+
+
+all: ${CILLIBS} ${XCILLIBS} ${CILEXTLIBS}
+
+
+
+#============================================================
+# CIL LIBRARY MAKEING
+#============================================================
+CILOBJS = \
+	Image.o Voxel.o ImageFile.o ImageDisp.o \
+	ImageFile/FImage.o  ImageShowing.o \
+	ImageFile/pnm.o ImageFile/c2d.o ImageFile/gif.o ImageFile/j4.o \
+	ImageFile/jpeg.o ImageFile/ps.o ImageFile/s3d.o ImageFile/tiff.o \
+	ImageFile/viff.o ImageFile/xbm.o ImageFile/xwbitmap.o \
+	ImageFile/xwd.o ImageFile/dib.o \
+	server/cilclient.o \
+	misc/optlib.o misc/memlib.o misc/shmemlib.o \
+	misc/filelib.o misc/fileslib.o misc/debug.o misc/strlib.o \
+	misc/typelib.o misc/timelib.o misc/socketlib.o
+CILSAOBJS = ImageFile.o
+CILSOOBJS = ${CILOBJS}
+
+${CILLIB} : ${CILOBJS}
+	${RM} $@
+	${AR} $@ ${CILOBJS}
+	${RANLIB} $@
+
+${CILSOLIB} : ${CILSOOBJS}
+	${RM} $@
+	(cd shared; ld -o ../$@ -assert pure-text $(CILSOOBJS))
+
+${CILSALIB} : ${CILSAOBJS}
+	${RM} $@
+	${ARSA} $@ ${CILSAOBJS}
+	${RANLIB} $@
+
+
+
+#============================================================
+# X CIL LIBRARY MAKEING
+#============================================================
+XCILOBJS = \
+	Xcil/Xcil_file_dialog.o Xcil/Xcil_dialog.o Xcil/Xcil_menu.o\
+	Xcil/Xcil_scroll.o Xcil/Xcil_popup.o Xcil/Xcil_confirm.o \
+	Xcil/Xcil_panel.o Xcil/Xcil_text.o \
+	Xcil/Xcil_string.o Xcil/Xcil_misc.o Xcil/Xcil_hdr.o \
+	Xcil/Xcil_lib.o Xcil/Xcil_event.o \
+	Xcil/Xcil_text_loc.o \
+	Xcil/XImage.o Xcil/XImageCG.o Xcil/ImageCG.o \
+	Xcil/imgfont.o Xcil/xfont.o \
+	Xcil/XImage1p.o Xcil/XImage8p.o Xcil/XImage16p.o Xcil/XImage24p.o \
+	Xcil/bit1.o Xcil/char.o Xcil/long.o Xcil/uchar.o Xcil/uchar3.o \
+	Xcil/fontlib.o Xcil/font.o Xcil/cglib.o
+XCILSAOBJS = Xcil/XImage.o
+XCILSOOBJS = ${XCILOBJS}
+
+${XCILLIB} : ${XCILOBJS}
+	${RM} $@
+	${AR} $@ ${XCILOBJS}
+	${RANLIB} $@
+
+${XCILSOLIB} : ${XCILSOOBJS}
+	${RM} $@
+	(cd shared; ld -o ../$@ -assert pure-text $(XCILSOOBJS))
+
+${XCILSALIB} : ${XCILSAOBJS}
+	${RM} $@
+	${ARSA} $@ ${XCILSAOBJS}
+	${RANLIB} $@
+
+
+
+#============================================================
+# CIL EXTENTION LIBRARY MAKEING
+#============================================================
+CILEXTOBJS = \
+	Image/average.o Image/copyarea.o Image/median.o Image/labeling.o \
+	Image/sobel.o Image/laplacian4.o Image/laplacian8.o \
+	Image/separate2.o Image/fillmoat.o \
+	Image/reverse.o Image/liner.o Image/longtype.o \
+	Image/dilation.o Image/erosion.o Image/opening.o Image/closing.o \
+	Image/and.o \
+	Image/gaussian.o Image/dgaussian.o Image/dgaussabs.o \
+	Image/thresholding.o Image/histflat.o \
+	Image/fillin.o Image/gauss_loc.o Image/filtering.o \
+	Image/binddata.o Image/roundpix.o \
+	Image/anytopnm.o \
+	Image/labelling.o \
+	Image/caller.o Image/nosupport.o Image/type-check.o \
+	ColorImage/Abe.o ColorImage/Joblove.o ColorImage/Lab.o \
+	ColorImage/Luv.o ColorImage/Ohta.o ColorImage/RGB_to.o \
+	ColorImage/Smith.o ColorImage/Yagi.o ColorImage/distance.o
+
+CILEXTSAOBJS = Image/type-check.o
+CILEXTSOOBJS = ${CILEXTOBJS}
+
+${CILEXTLIB} : ${CILEXTOBJS}
+	${RM} $@
+	${AR} $@ ${CILEXTOBJS}
+	${RANLIB} $@
+
+${CILEXTSOLIB} : ${CILEXTSOOBJS}
+	${RM} $@
+	(cd shared; ld -o ../$@ -assert pure-text $(CILEXTSOOBJS))
+
+${CILEXTSALIB} : ${CILEXTSAOBJS}
+	${RM} $@
+	${ARSA} $@ ${CILEXTSAOBJS}
+	${RANLIB} $@
+
+
+
+#============================================================
+# CLEAN
+#============================================================
+allclean :
+	${RM} ${CILLIBS}
+	${RM} ${XCILLIBS}
+	${RM} ${CILEXTLIBS}
+	${RM} *~ */*~
+	${RM} core a.out
+	${RM} *.o shared/*.o */*.o shared/*/*.o
+
+clean :
+	${RM} *~ */*~
+	${RM} core a.out
+
+aclean :
+	${RM} ${CILLIBS}
+	${RM} ${XCILLIBS}
+	${RM} ${CILEXTLIBS}
+	${RM} *~ */*~
+	${RM} core a.out
+
+
+
+#============================================================
+# INSTALL
+#============================================================
+install : all
+	install ${CILLIBS} ${DEST}
+	install ${XCILLIBS} ${DEST}
+	install ${CILEXTLIBS} ${DEST}

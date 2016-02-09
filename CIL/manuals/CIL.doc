@@ -1,0 +1,543 @@
+
+
+
+●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+●●●●●●●●●●●● CIL ライブラリの説明 ●●●●●●●●●●●●
+●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+
+
+
+○はじめに
+
+  ２次元／３次元画像を加工するために、最低限必要なものだけを集めたライ
+ブラリです。基本的には、画像領域の確保と、ファイルからのロードとセーブ
+です。また、２次元画像に関してはＸウィンドウ上への表示、グラフィック・
+ルーチンなどもあります。
+
+
+
+○単純型の定義、メタタイプ
+
+  typelib.h に基本的な型の定義とメタタイプの定義があります。以下に簡単に
+紹介します。
+
+	画素型(char short int long ももちろん画素型として使用可能)
+	typedef unsigned char  uchar;
+	typedef unsigned short ushort;
+	typedef unsigned int   uint;
+	typedef unsigned long  ulong;
+
+	実際は uchar だけど有効ビットだけ
+	typedef uchar  bit1;
+	typedef uchar  bit4;
+
+	画素複合型
+	typedef struct { char   at[2]; } char2;
+	typedef struct { short  at[2]; } short2;
+	typedef struct { int    at[2]; } int2;
+	typedef struct { long   at[2]; } long2;
+
+	typedef struct { uchar  at[2]; } uchar2;
+	typedef struct { ushort at[2]; } ushort2;
+	typedef struct { uint   at[2]; } uint2;
+	typedef struct { ulong  at[2]; } ulong2;
+
+	typedef struct { float  at[2]; } float2;
+	typedef struct { double at[2]; } double2;
+
+	typedef struct { char   at[3]; } char3;
+	typedef struct { short  at[3]; } short3;
+	typedef struct { int    at[3]; } int3;
+	typedef struct { long   at[3]; } long3;
+
+	typedef struct { uchar  at[3]; } uchar3;
+	typedef struct { ushort at[3]; } ushort3;
+	typedef struct { uint   at[3]; } uint3;
+	typedef struct { ulong  at[3]; } ulong3;
+
+	typedef struct { float  at[3]; } float3;
+	typedef struct { double at[3]; } double3;
+
+  以上がここで定義されている単純型です。
+
+
+
+○複合型の定義、アクセス関数型の定義
+
+  複合型というのは複数の型の構造体のポインタとして定義されていて、何か
+意味のある単位の集まりです。アクセス関数型というのは、複合型もしくは単
+純型にアクセスするための構造体です。複合型への直接のアクセスはあまりや
+らないほうがいいでしょう。アクセス関数型には、複合型の生成や破壊、複合
+型へのメンバへのアクセス関数が宣言されています。これを使って複合型へは
+アクセスをします。
+
+  現在あるのは、以下のものです。
+
+	複合型		アクセス関数型
+	image		Image		２次元画像
+	voxel		Voxel		３次元画像
+
+	cg_pen		CGPen		CGで使用するペン
+	<type>**	CG		グラフィックス関係
+	image		ImageFile	画像ファイルに関すること
+
+  実際のところ上で述べたメタタイプは、アクセス関数型の一つです。型とそ
+の型をアクセスするための関数を集めた型があると思っていいでしょう。ほと
+んどの場合この二つはペアで存在しています。
+  プログラムでは変数の宣言をする時の型は、voxel とか image とかを使い
+ます。アクセス関数型はすでに宣言されていて、ヘッダファイルを include 
+すればいつでも使用できます。
+
+
+
+○複合型詳細
+
+  各複合型とそのアクセス関数型は、ヘッダーファイルに宣言されています。
+ヘッダーファイルの名前は、その複合型の名前の頭文字を大文字にしたもので
+す。また、その複合型のアクセス関数型も、名前の頭文字を大文字にしたもの
+です。
+
+	例 : image
+
+	複合型			image
+	アクセス関数型		Image
+	ヘッダファイル		Image.h
+	アクセス関数のコード	Image.c
+
+  基本的にアクセス関数型は、
+
+	create		複合型の実体生成
+	destroy		破壊
+	print		メンバの表示
+
+の関数を持っています。さらに、複合型のメンバを参照するための関数と変更
+するための関数を持っています。あとは、各複合型でよく使う関数を持ってい
+ます。
+
+
+
+○ image
+
+  ２次元画像を扱う複合型 image です。image は以下のように定義されてい
+ます。
+
+	typedef struct imageRec {
+	  string   name;		名前
+	  long     type;		画素の型
+	  long     xsize;		Ｘサイズ
+	  long     ysize;		Ｙサイズ
+	  char   **data;		データへのポインタ
+	} *image;
+
+  アクセス関数型 Image は以下のように定義されています。
+
+	extern struct ImageRec {
+	
+	/*=========================================*
+	 * Image.create : 画像型の領域を確保する。
+	 *=========================================*/
+	  image ( *create )	      /*    return 画像型 */
+		P1 (( char *, name )) /* #1 input  画像名 */
+	
+	/*==========================================*
+	 * Image.destroy : 画像型の領域を解放する。
+	 *==========================================*/
+	  void ( *destroy )
+		P1 (( image, self )) /* #1 input 画像型 */
+	
+	/*========================================*
+	 * Image.print : 画像型の属性を表示する。
+	 *========================================*/
+	  void ( *print )
+		P1 (( image, self )) /* #1 input 画像型 */
+	
+	/*=================================*
+	 * Image.load : 画像をロードする。
+	 *=================================*/
+	  long ( *load )		  /*    return 真理値(成功:1) */
+		P2 (( image , self     ), /* #1 in/out 画像型         */
+		    ( char *, filename )) /* #2 input  ファイル名     */
+	
+	/*=================================*
+	 * Image.save : 画像をセーブする。
+	 *=================================*/
+	  long ( *save )		  /*    return 真理値(成功:1) */
+		P3 (( image , self     ), /* #1 input  画像型         */
+		    ( char *, filename ), /* #2 input  ファイル名     */
+		    ( char *, comment  )) /* #3 input  コメント       */
+	
+	
+	
+	/*==================================================*
+	 * Image.name  : 画像名を返す。
+	 * Image.type  : 画素の型を返す。
+	 * Image.xsize : Ｘサイズを返す。
+	 * Image.ysize : Ｙサイズを返す。
+	 * Image.data  : 画像の二次元配列のポインタを返す。
+	 *==================================================*/
+	  char *( *name )	     /*    return 画像名 */
+		P1 (( image, self )) /* #1 input  画像型 */
+	
+	  long ( *type )	     /*    return 画素の型 */
+		P1 (( image, self )) /* #1 input  画像型   */
+	
+	  long ( *xsize )	     /*    return Ｘサイズ */
+		P1 (( image, self )) /* #1 input  画像型   */
+	
+	  long ( *ysize )	     /*    return Ｙサイズ */
+		P1 (( image, self )) /* #1 input  画像型   */
+	
+	  char **( *data )	     /*    return 二次元配列のポインタ */
+		P1 (( image, self )) /* #1 input  画像型               */
+	
+	/*===============================================================*
+	 * Image.area   : 画像の画素数を返す。
+	 * Image.byte   : 画像のデータのバイト数を返す。
+	 * Image.raster : ラスタスキャン用の一次元配列のポインタを返す。
+	 *===============================================================*/
+	  long ( *area )	     /*    return 画素数 */
+		P1 (( image, self )) /* #1 input  画像型 */
+	
+	  long ( *byte )	     /*    return バイト数 */
+		P1 (( image, self )) /* #1 input  画像型   */
+	
+	  char *( *raster )	     /*    return 一次元配列のポインタ */
+		P1 (( image, self )) /* #1 input  画像型 	       */
+	
+	
+	
+	/*=============================================*
+	 * Image.make : 画像のデータの領域を確保する。
+	 *=============================================*/
+	  void ( *make )
+		P4 (( image, self  ), /* #1 in/out 画像型         */
+		    ( long , type  ), /* #2 input  画素の型識別子 */
+		    ( long , xsize ), /* #3 input  Ｘサイズ       */
+		    ( long , ysize )) /* #4 input  Ｙサイズ       */
+	
+	/*=============================================*
+	 * Image.free : 画像のデータの領域を解放する。
+	 *=============================================*/
+	  void ( *free )
+		P1 (( image, self )) /* #1 in/out 画像型 */
+	
+	/*=================================*
+	 * Image.copy : 画像をコピーする。
+	 *=================================*/
+	  void ( *copy )
+		P2 (( image, self ), /* #1 output コピー先画像型 */
+		    ( image, src  )) /* #2 input  コピー元画像型 */
+	
+	/*==============================================*
+	 * Image.clear : 画像のデータ領域をクリアする。
+	 *==============================================*/
+	  void ( *clear )
+		P1 (( image, self )) /* #1 in/out 画像型 */
+	
+	/*=====================================================*
+	 * Image.resize : 画像のデータ領域のサイズを変更する。
+	 *=====================================================*/
+	  void ( *resize )
+		P4 (( image, self  ), /* #1 output 変更後画像型 */
+		    ( image, src   ), /* #2 input  入力画像型   */
+		    ( long , xsize ), /* #3 input  Ｘサイズ     */
+		    ( long , ysize )) /* #4 input  Ｙサイズ     */
+	
+	/*========================================*
+	 * Image.sub : 画像の部分領域を切り出す。
+	 *========================================*/
+	  void ( *sub )
+		P6 (( image, self  ), /* #1 output 出力画像型 */
+		    ( image, src   ), /* #2 input  入力画像型 */
+		    ( long , src_x ), /* #3 input  左上Ｘ座標 */
+		    ( long , src_y ), /* #4 input  左上Ｙ座標 */
+		    ( long , xsize ), /* #5 input  Ｘサイズ   */
+		    ( long , ysize )) /* #6 input  Ｙサイズ   */
+	
+	/*=================================*
+	 * Image.swap : 画像を入れ替える。
+	 *=================================*/
+	  void ( *swap )
+		P2 (( image, src1 ), /* #1 input 画像型 */
+		    ( image, src2 )) /* #2 input 画像型 */
+	
+	
+	
+	/*====================================================*
+	 * Image.createFromImage : 画像を生成してコピーする。
+	 *====================================================*/
+	  image ( *createFromImage )  /*    return 画像型 */
+		P2 (( char *, name ), /* #1 input  画像名 */
+		    ( image , src  )) /* #2 input  画像型 */
+	
+	/*======================================================*
+	 * Image.createFromFilename : 画像を生成してロードする。
+	 *======================================================*/
+	  image ( *createFromFilename )	  /*    return 画像型     */
+		P2 (( char *, name     ), /* #1 input  画像名     */
+		    ( char *, filename )) /* #2 input  ファイル名 */
+	
+	/*=========================================================*
+	 * Image.createMake : 画像を生成してデータ領域を確保する。
+	 *=========================================================*/
+	  image ( *createMake )	       /*    return 画像型	   */
+		P4 (( char *, name  ), /* #1 input  画像名	   */
+		    ( long  , type  ), /* #2 input  画素の型識別子 */
+		    ( long  , xsize ), /* #3 input  Ｘサイズ	   */
+		    ( long  , ysize )) /* #4 input  Ｙサイズ	   */
+	
+	/*=====================================================================*
+	 * Image.createFromBitmapData : ビットマップデータから画像を生成する。
+	 *=====================================================================*/
+	  image ( *createFromBitmapData ) /*    return 画像型	          */
+		P4 (( char  *, name  ),	  /* #1 input  画像名             */
+		    ( uchar *, data  ),	  /* #2 input  ビットマップデータ */
+		    ( long   , xsize ),	  /* #3 input  Ｘサイズ           */
+		    ( long   , ysize ))	  /* #4 input  Ｙサイズ           */
+	
+	
+	
+	/*====================================================*
+	 * Image.display : imagedisp を使って画像を表示する。
+	 *====================================================*/
+	  void ( *display )
+		P2 (( image , self ), /* #1 input 画像型		 */
+		    ( char *, opt  )) /* #2 input imagedisp のオプション */
+	
+	/*==========================================*
+	 * Image.undisplay : imagedisp を終了する。
+	 *==========================================*/
+	  void ( *undisplay )
+		P1 (( image , self )) /* #1 input 画像型 */
+	
+	} Image;
+
+  使い方は、create、何かの処理、destroy です。
+
+	{
+	  image src;
+	  src = Image.create("test");
+	  /* do something */
+	  Image.destroy(src);
+	}
+
+  画素へのアクセスの方法は、一端、２次元配列へのポインタに代入してから
+使します。また、ループ内でメンバをアクセスしなければいけない時も効率を
+考えると、一端、何かに代入したほうがいいです。
+
+	{
+	  register uchar **data;
+	  int x,y;
+	  long xsize,ysize;
+
+	  data = Image.data(src);
+	  xsize = Image.xsize(src);
+	  ysize = Image.ysize(src);
+	  for (y = 0; y < ysize; y++)
+	    for (x = 0; x < xsize; x++)
+	      /* do something ... data[y][x] ... */
+	}
+
+  ファイルとのアクセスは、load と save を使います。
+
+	long (*load) P ((image self,string filename));
+	long (*save) P ((image self,string filename,string comment));
+
+  load は自動的に指定されたファイルのフォーマットを解析してロードします。
+compress で圧縮されているものでもＯＫです。いまのところ、
+
+	J4		阿部研に昔からある
+	PPM		画像フォーマットをコンバートするための中間ファ
+			イルに通常使われているフォーマット
+	GIF, JPEG, TIFF	圧縮効率がいい
+	S3D		スキャナで読み込んだもの
+	C2D		このライブラリのオリジナルで、もともと２次元配
+			列をセーブするためのフォーマットとして使う
+	XBM,XWD		その他（知らない人は使わないように）
+	PS/PSid		その他（知らない人は使わないように）
+
+のフォーマットが読めます。
+
+  通常はJ4ファイル形式でしましょう。これは今までのプログラムの資産を考
+えるとそうするべきでしょう。しかし、J4フォーマットでカバーできない画像
+もあるでしょう。そういうときは、C2Dを使用しましょう。例えば、Double2 
+の型をセーブしたいとか。C2D はすべての型をセーブできます。特殊なときに
+は C2D がいいです。GIF や JPEG でセーブするのはとりあえずやめてくださ
+い。
+
+  実際は以下のようにします。
+	{
+	  ......
+	  /* dest <--- do something : src */
+	  Image.load(src,"out.test");
+	  do_something(dest,src);
+	  ImageFile.setSaveFotmat("J4");
+	  Image.save(dest,"out.something","something");
+	  ......
+	}
+
+
+
+  以下に、特別で便利な関数群を紹介しておきます。
+
+
+
+  void Image.display(image self,char *option)
+  void Image.undisplay(image self)
+
+
+
+○ extend CIL functions
+
+  拡張 CIL 関数群です。morphology 演算などをサポートしています。
+
+  #include "Image/Morphology.h"
+
+  とすれば、以下の関数が使用できます。サポートしている型は、Bit1 と 
+UChar の二つです。自動的に識別して演算を施します。
+
+void image__dilation P ((image dest,image src,image structuring_element));
+void image__erosion  P ((image dest,image src,image structuring_element));
+
+void image__opening  P ((image dest,image src,image structuring_element));
+void image__closing  P ((image dest,image src,image structuring_element));
+
+
+  その他の関数群は、
+
+  #include "Image/Funcs.h"
+
+  に宣言されています。詳しくは、ヘッダファイルを見て下さい。
+
+
+
+○とりあえず、、、
+
+  とりあえず、画像だけを扱うなら以上のものであとはサンプルプログラムを
+みればなんとかなると思います。
+ソースとライブラリ本体は、
+
+	/home/abe/common/src/CIL
+	/home/abe/common/lib/sun4/libcil.a
+	/home/abe/common/lib/sun4/libcil.so.1.0
+
+においてあります。詳しくは、ヘッダーファイルと、各コードを見るか、それ
+か直接聞いて下さい。
+その他、説明していないのは時期にドキュメントを作っておきますので、
+
+	/home/abe/common/src/CIL/CIL.doc
+
+を参照して下さい。
+
+  また、画像に関する各ルーチンは、Image/ に入っています。
+ライブラリ化してあるので自由に使うなりして下さい。
+
+
+
+○コマンドライン上でのコンパイル方法
+
+  コンパイル方法は、ライブラリをリンクするだけでいいです。共有ライブラ
+リがあるので、動的リンク、静的リンクどちらでもかまいません。通常は、動
+的リンクになります。
+
+  現在、ライブラリ、ヘッダファイル、ソースすべては、
+
+	/home/abe/common/src/CIL/
+
+に入っています。
+
+また、ヘッダファイルは、
+	/home/abe/common/include
+
+ライブラリは、
+	/home/abe/common/lib/sun4
+
+にも入っています。
+
+  ライブラリ名は、
+
+	libcil.a	普通のライブラリ
+	libcil.so.1.0	共有ライブラリ
+
+となっています。
+
+  実際のコンパイル方法です。いま、foo.c をコンパイルしようとします。
+
+	cc foo.c -o foo -I/home/abe/common/include -L/home/abe/common/lib/sun4 -lcil
+
+これで、実行系のファイル foo ができます。
+
+	-I/home/abe/common/include
+
+は、include ファイルのあるディレクトリを指定してます。
+
+	-L/home/abe/common/lib/sun4
+
+は、ライブラリのあるディレクトリを指定してます。
+
+  もしかしたら warning がでるかもしれませんが、気にしないで下さい。
+（ CG では、math ライブラリを使用しているので、もし CG を使う時はリン
+クして下さい。(-lm)）
+
+  alias しておくといいでしょう。
+
+	alias	cil	'cc \!* -I/home/abe/common/include -L/home/abe/common/lib/sun4 -lcil'
+
+	alias	cilm	'cc \!* -I/home/abe/common/include -L/home/abe/common/lib/sun4 -lcil -lm'
+
+
+
+○ make について
+
+	CC = cc
+	CFLAGS = -O -I/home/abe/common/include
+
+	LIB = /home/abe/common/lib/sun4
+
+	OBJS = \
+		xdisp.o \
+		initialize.o \
+		load.o \
+		open.o \
+		disp.o \
+		exec.o \
+		destrize.o
+
+	PROG = imagedisp
+
+	${PROG}: $(OBJS)
+		cc -o ${PROG} ${OBJS} -L${LIB} -lcil -lXw -lX11 -lm
+
+	static: $(OBJS)
+		cc -o ${PROG} ${OBJS} -Bstatic -L${LIB} \
+				-lcil -lXw -Bdynamic -lX11 -lm
+
+	clean :
+		rm -f *~ a.out core
+
+	allclean :
+		rm -f ${PROG} *~ *.o a.out core
+
+
+
+
+
+○基本知識
+
+・構造体、構造体のポインタ
+・ファイル、画像ファイル
+
+○ C の知識
+
+・C のコンパイル方法（make）
+・共有ライブラリ
+・ライブラリの動的リンク
+・システムコール
+
+○その他の知識
+
+・オブジェクト指向、データ抽象、抽象データ型
+・関数へのポインタ
+・メモリ管理に関する関数(malloc,free,calloc...)
+・Xwindow
+

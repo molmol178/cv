@@ -1,0 +1,39 @@
++-------+-------+-------+-------+-------+-------+
+|	| font  | label |feature| gray  |C-label|
++-------+-------+-------+-------+-------+-------+
+|char	|o	|o	|o[+-,+]|o	|o	|
+|uchar	|x	|o	|o[+]	|o	|o	|
+|short	|x	|o	|o[+-,+]|o	|o	|
+|ushort	|x	|o	|o[+]	|o	|o	|
+|long	|x	|o	|o[+-,+]|o	|o	|
+|ulong	|x	|o	|o[+]	|o	|o	|
+|float	|x	|x	|o[+-,+]|o	|x	|
+|double	|x	|x	|o[+-,+]|o	|x	|
++-------+-------+-------+-------+-------+-------+
+|	|bit1	|uchar	|uchar3	|uchar	|uchar3	|
++-------+-------+-------+-------+-------+-------+
+
++-------+-------+	+-------+-------+
+|	|vector |	|	|rgb    |
++-------+-------+	+-------+-------+
+|char2	|o      |	|char3	|o      |
+|uchar2	|o      |	|uchar3	|o      |
+|short2	|o      |	|short3	|o      |
+|ushort2|o      |	|ushort3|o      |
+|long2	|o      |	|long3	|o      |
+|ulong2	|o      |	|ulong3	|o      |
+|float2	|o      |	|float3	|o      |
+|double2|o      |	|double3|o      |
++-------+-------+	+-------+-------+
+|	|uchar3 |	|	|uchar3 |
++-------+-------+	+-------+-------+
+
+CIL_DP_CHAR	{gray#max, feature#max, label, color-label#n}
+CIL_DP_UCHAR	{gray#max, feature#max, label, color-label#n}
+CIL_DP_SHORT	{gray#max, feature#max, label, color-label#n}
+CIL_DP_USHORT	{gray#max, feature#max, label, color-label#n}
+CIL_DP_LONG	{gray#max, feature#max, label, color-label#n}
+CIL_DP_ULONG	{gray#max, feature#max, label, color-label#n}
+CIL_DP_FLOAT	{gray#max, feature#max}
+CIL_DP_DOUBLE	{gray#max, feature#max}
+

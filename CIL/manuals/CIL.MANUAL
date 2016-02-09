@@ -1,0 +1,633 @@
+┌───────────────────────────────────┐
+│　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　ＣＩＬマニュアル　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　　　杉山岳弘　　　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　１９９４年１月　　　　　　　　　　　　　　　│
+│　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　│
+└───────────────────────────────────┘
+
+
+
+１．Introduction
+
+　ＣＩＬは、画像に関する研究を行なっている人達に、ごく基本的なルーチン
+を提供するために開発されたものです。
+
+　ＣＩＬは、以下のように構成されています。
+
+	- ＵＮＩＸ・ＳＹＳＴＥＭ・ＣＡＬＬ基本ライブラリ
+	- ＣＩＬ本体
+	- ＣＩＬサーバ／クライアント
+	- 画像フォーマット・ライブラリ
+	- ＸＣＩＬ本体
+	- カラー画像関係ライブラリ
+	- フィルタ関係ライブラリ
+	- 二値画像関係ライブラリ（予定）
+
+現在では、これらすべてをまとめてＣＩＬと呼んでいます。
+
+このマニュアルは、これらのライブラリ群の説明をします。
+
+
+
+２．ＵＮＩＸ・ＳＹＳＴＥＭ・ＣＡＬＬ基本ライブラリ
+
+　このライブラリは、ＣＩＬの基礎になるライブラリで、ＣＩＬは、これをも
+とに書かれています。別名 misc ライブラリと呼ばれており、
+
+	#include "misc/...."
+
+のようにインクリュードする。
+
+　このライブラリは、以下のように構成されています。
+
+	- comacros.h		ANSI と K&R を吸収するマクロ
+	- filelib.[ch]		ファイル・パイプ関係
+	- socketlib.[ch]	ソケットを使った通信関係
+	- memlib.[ch]		メモリの管理
+	- shmemlib.[ch]		共有メモリの管理
+	- strlib.[ch]		文字列関係
+	- optlib.[ch]		コマンドライン解析、マニュアルの表示
+	- typelib.[ch]		基本型の管理
+	- timelib.[ch]		時間測定(SunOSのみ)
+
+
+
+２．１．comancros.h
+
+　これは、ＣＩＬのライブラリ関数を決まったフォームで書くためライブラリ
+です。また、これを使うと、ANSI と K&R の違いをある程度吸収できます。関
+数宣言の統一化と、引数のチェックの強化も実現できます。
+
+　関数の書き方は、以下の通り。
+
+	・関数前宣言
+
+		<type> <function-name>
+			P#n (( <type#1>, <name#1> ),
+			     ( <type#2>, <name#2> ),
+				...
+			     ( <type#n>, <name#n> ))
+
+	・関数宣言
+
+		<type> <function-name>
+			_P#n (( <type#1>, <name#1> ),
+			      ( <type#2>, <name#2> ),
+				...
+			      ( <type#n>, <name#n> ))
+		{
+			<codes>
+		}
+
+　前宣言と宣言の違いは、"P"に、"_"がついているかいないかだけで、あとは
+同じ。つまり、コピーしてくればＯＫです。
+
+　例を少しあげておきましょう。
+
+	--- optlib.h --- の一部
+	/*==========================================================*
+	 * optinit : コマンドラインを指定されたオプションで解析する
+	 *==========================================================*/
+	void optinit
+		P4 (( int    , op_argc ), /* オプションの数     */
+		    ( char **, op_argv ), /* オプションのリスト */
+		    ( int    , argc    ), /* 引数の数           */
+		    ( char **, argv    )) /* 引数のリスト       */
+
+	--- optlib.c --- の一部
+	/*==========================================================*
+	 * optinit : コマンドラインを指定されたオプションで解析する
+	 *==========================================================*/
+	void optinit
+		_P4 (( int    , op_argc ), /* オプションの数     */
+		     ( char **, op_argv ), /* オプションのリスト */
+		     ( int    , argc    ), /* 引数の数           */
+		     ( char **, argv    )) /* 引数のリスト       */
+	{
+	  ...
+	}
+
+理想的には、ヘッダファイルがマニュアルになるといいですね。
+
+
+
+２．２．filelib.[ch]
+
+　ファイル操作に関する関数をマクロ化して統一したものです。また、パイプ
+などを使って画像を転送する時のバッファリング関係の不具合いを修正してい
+ます。このライブラリでは、
+
+	ファイル名		fn_*
+	ファイルポインタ	fp_*
+	ファイル記述子		fd_*
+
+の３つを扱うことができます。
+
+
+２．２．１．ファイル名指定関数
+
+　ファイル名を指定して何か操作するためのルーチンです。すべて、マクロで
+実現されています。
+
+・fn_rename( char *old_pathname, char *new_pathname );
+
+	ファイル名を変更します。
+
+・fn_remove( char *pathname );
+
+	ファイルを削除します。
+
+・fn_stat( char *pathname, struct stat *buf );
+
+	ファイルのステータスを調べます。
+
+・fn_access( char *pathname, int mode );
+
+	アクセス属性を調べます。モードは以下のとおり。
+		R_OK 読み取り
+		W_OK 書き込み
+		X_OK 実行、サーチ
+
+
+
+２．２．２．ファイルポインタ指定関数
+
+　ファイルポインタを使った関数群です。fp_open、fp_read、fp_writeは関数
+ですが、それ以外は、マクロになっています。
+
+・FILE *fp_open( char *filename, char *filetype );
+
+	ファイルをオープンします。このとき、ファイル名によって、
+
+		"stdin"		標準入力
+		"stdout"	標準出力
+		"-"		ファイルタイプ "r" なら標準入力
+				ファイルタイプ "w" なら標準出力
+
+	となります。
+
+・fp_close( FILE *fp );
+
+	fp_open でオープンしたファイルをクローズします。
+
+・fp_flush( FILE *fp );
+
+	バッファをフラッシュします。
+
+・fp_seek( FILE *fp, long offset, long prtname );
+
+	ファイルの操作の位置をセットします。詳しくは、man fseekで。
+
+・fp_tell( FILE *fp );
+
+	詳しくは man ftell を。
+
+・fp_rewind( FILE *fp );
+
+	ファイルを巻き戻します。
+
+・fp_printf( FILE *fp, char *format, ... );
+
+	fprintf と同じ。
+
+・fp_getc( FILE *fp );
+
+	getc と同じ。
+
+・fp_ungetc( FILE *fp, char c );
+
+	ungetc と同じ。
+
+・fp_putc( FILE *fp, char c );
+
+	putc と同じ。
+
+・fp_gets( FILE *fp, char *ptr, long bytes );
+
+	fgets と同じだが、引数の順番が違う。
+
+・fp_puts( FILE *fp, char *ptr );
+
+	fputs と同じだが、引数の順番が違う。
+
+・fp_read( FILE *fp, char *ptr, long elem_num, long elem_size );
+
+	配列 ptr に、要素サイズ elem_size を要素数 elem_num だけ、ファ
+	イル fp から読み込む。この関数は、入力待ちを行ないます。よって、
+	画像などの大量のデータをプロセス間でパイプなどを使って転送する
+	ときに有効です。
+
+・fp_write( FILE *fp, char *ptr, long elem_num, long elem_size );
+
+	配列 ptr から、要素サイズ elem_size を要素数 elem_num だけ、ファ
+	イル fp に書き込む。この関数は、出力待ちを行ないます。よって、
+	画像などの大量のデータをプロセス間でパイプなどを使って転送する
+	ときに有効です。通常、fp_read とペアで使用します。
+
+・fp_readbyte( FILE *fp, char *ptr, long nbytes );
+
+	ファイル fp から配列 ptr にバイト数 nbytes だけ読み込む。
+	fp_read を使っている。
+
+・fp_writebyte( FILE *fp, char *ptr, long nbytes );
+
+	配列 ptr からファイル fp にバイト数 nbytes だけ書き込む。
+	fp_write を使っている。
+
+２．２．３．ファイル記述子指定関数
+
+　通常は、使用しないと思うので、詳しい説明は行ないません。説明が知りた
+い人は、直接、来て下さい。
+
+
+
+２．３．socketlib.[ch]
+
+　ソケットを持ちいた通信に使用するときの関数群が納められてます。これを
+使用するには、ソケットに関する専門の知識がないと使用できないと思うので、
+ここでは、説明しません。しかし、これを使用することによって、結構、簡単
+にクライアント・サーバのプログラムが書けると思います。詳しく知りたい人
+は、直接、来て下さい。
+
+
+
+２．４．memlib.[ch]
+
+　メモリ管理に関する、関数群が納められています。１次元、２次元、３次元
+配列を簡単に作成することができます。また、メモリが確保できなかった時の
+処理も、ユーザが決めることができます。これは、大域変数
+
+	MEMLIB_ERROR
+
+の値によって、決定されます。もし、この値が、１ならば、メモリが確保され
+なかったとき、終了します。０ならば、終了せずに、０を返します。
+
+　また、型指定のできるマクロが定義されているので、キャストなしで、ポイ
+ンタに代入できます。通常はこのマクロを使います。
+
+○単一メモリ
+
+・char *memnew( long size );
+
+　サイズ size だけのメモリを確保します。
+
+・void memfree( char *ptr );
+
+　メモリを解放します。
+
+・char *memrenew( char *ptr, long size );
+
+　メモリを再確保します。
+
+・void memcopy( char *destination, char *source, long size );
+
+　メモリを source から destination へ size バイトだけコピーします。
+
+・memfill( char *ptr, char c, long size );
+
+　メモリ空間を c で size バイト埋めます。
+
+○１次元配列
+
+・char *memnew1( long num, long size );
+
+　要素サイズ size の要素数 num だけのメモリを確保します。
+
+・void memfree1( char *ptr );
+
+　メモリを解放します。
+
+・char *memrenew1( char *ptr, long num, long size );
+
+　メモリを再確保します。
+
+・void memcopy1( char *destination, char *source, long num, long size );
+
+　メモリを source から destination へコピーします。
+
+・memfill1( char *ptr, char c, long num, long size );
+
+　メモリ空間を c で埋めます。
+
+○２次元配列
+
+・char **memnew2( long xnum, long ynum, long size );
+
+　要素サイズ size の要素数 xnum × ynum だけの２次元配列のメモリを確保
+します。
+
+・void memfree2( char **ptr );
+
+　メモリを解放します。
+
+・void memcopy2( char **destination, char **source,
+		 long xnum, long ynum, long size );
+
+　メモリを source から destination へコピーします。
+
+・memfill2( char *ptr, char c, long xnum, long ynum, long size );
+
+　メモリ空間を c で埋めます。
+
+○３次元配列
+
+・char **memnew3( long xnum, long ynum, long znum, long size );
+
+　要素サイズ size の要素数 xnum × ynum × znum だけの３次元配列のメモ
+リを確保します。
+
+・void memfree3( char ***ptr );
+
+　メモリを解放します。
+
+・void memcopy3( char ***destination, char ***source,
+		 long xnum, long ynum, long znum, long size );
+
+　メモリを source から destination へコピーします。
+
+・memfill3( char *ptr, char c, long xnum, long ynum, long znum, long size );
+
+　メモリ空間を c で埋めます。
+
+○型指定マクロ
+
+・TYPE *typenew( TYPE );
+
+　型の領域を確保する。
+
+・TYPE *typerenew( TYPE *ptr, TYPE );
+
+　型の領域を再確保する。
+
+・void typefree( TYPE *ptr );
+
+　型の領域を解放する。
+
+
+
+・TYPE *typenew1( long num, TYPE );
+
+　１次元配列を確保する。
+
+・TYPE *typerenew1( TYPE *ptr, long num, TYPE );
+
+　１次元配列を再確保する。
+
+・void typefree1( TYPE *ptr );
+
+　１次元配列を解放する。
+
+
+
+・TYPE **typenew2( long xnum, long ynum, TYPE );
+
+　２次元配列を確保する。
+
+・void typefree2( TYPE **ptr );
+
+　２次元配列を解放する。
+
+
+
+・TYPE ***typenew3( long xnum, long ynum, long znum, TYPE );
+
+　３次元配列を確保する。
+
+・void typefree3( TYPE ***ptr );
+
+　３次元配列を解放する。
+
+
+
+２．５．shmemlib.[ch]
+
+　共有メモリの操作するときの関数群が集められています。
+
+・char *shmemnew( long key, long size );
+
+　サイズ分だけキーでもって共有メモリを確保します。
+
+・voi shmemfree( long key );
+
+　キーの共有メモリを解放します。
+
+・char *shmemget( long key );
+
+　キーを使って共有メモリのポインタを獲得します。
+
+・long shmemgetinfo( long key, shmeminfoRec *info );
+
+　キーで指定された共有メモリの情報を獲得します。返す値は、獲得できたか
+どうかの真理値です。
+
+・long shmemgetlist( shmeminfoRec *list );
+
+　共有メモリの情報のリストを獲得します。返り値は、リストの個数です。
+
+
+
+２．６．strlib.[ch]
+
+　文字列操作に関する関数が納められています。この中で、最も重要と思われ
+るのは、strsplit だと思います。これは、文字列を指定した区切り文字で分
+離することができ、ＣＩＬの各種のテキストデータの解析に用いられています。
+それと、strjistoeuc も重要だと思われます。これは、漢字のコードをＪＩＳ
+コードから ＥＵＣコードに変換する関数です。これも、ＣＩＬでよく使われ
+る関数です。他の関数は、特に重要でない限り書く必要はないと思いますので、
+省略します。
+
+・char *strnew( char *str );
+
+　新しい文字列を確保する。
+
+・void strfree( char *str );
+
+　文字列を解放する。
+
+・long strsplit( char *sentence, char *head, char *separaters );
+
+　文字列 sentence を区切り文字リスト separaters で、分離して、各先頭を 
+head に設定していきます。返り値としては、単語数を返します。
+
+・void strjistoeuc( char *euc_code, char *jis_code );
+
+　ＪＩＳコードをＥＵＣコードに変換します。
+
+
+
+２．７．typelib.[ch]
+
+　これは、型を関するためのライブラリです。主に画像処理で使用する型に関
+する情報が登録されています。また、新しく型を登録したり、動的スイッチ機
+能も、この関数に登録されています。この動的スイッチ機能は、ＣＩＬの拡張
+ライブラリで画素の型によって機能の違う関数を呼び出したいときに使用して
+ます。
+
+・初期登録型
+
+	packedbit1, bit1, bit4,
+	char, short, int, long,	uchar, ushort, uint, ulong,
+	char2, short2, int2, long2, uchar2, ushort2, uint2, ulong2,
+	char3, short3, int3, long3, uchar3, ushort3, uint3, ulong3,
+	float, double, float2, double2, float3, double3
+
+・型識別子
+
+	_None, PackedBit1, Bit1, Bit4,
+	Char, Short, Int, Long,	UChar, UShort, UInt, ULong,
+	Char2, Short2, Int2, Long2, UChar2, UShort2, UInt2, ULong2,
+	Char3, Short3, Int3, Long3, UChar3, UShort3, UInt3, ULong3,
+	Float, Double, Float2, Double2, Float3, Double3
+
+・long typeinit( void );
+
+　型情報の初期化をします。
+
+・void typeprint( long type_id );
+
+　型識別子の情報を表示します。
+
+・void typeenter( char *name, char *size );
+
+　新しい型を登録します。返り値は、その型識別子です。
+
+・long typeget( char *name );
+
+　型の名前からその識別子を返します。
+
+・char *typename( long type_id );
+
+　型識別子から型の名前を返します。
+
+・long typesize( long type_id );
+
+　型識別子の型のサイズを返します。
+
+・char *typeselect( long type, char *table, long num, long size );
+
+　配列を検索して、型識別子と同じ型を持つ要素のポインタを返します。これ
+を使うことにより、動的スイッチング機能を実現できます。
+
+・TYPE *typeselectconst( long type_id, TYPE, TYPE *table );
+
+　typeselectと同じですが、こちらは、引数が違います。これは、テーブルの
+要素数が固定値の場合こちらを使うと、指定が楽になります。
+
+
+
+２．８．timelib.[ch]
+
+　このライブラリは、実行時間の測定用の関数群が集められています。ストッ
+プウオッチの役割もできます。しかし、SunOS しかサポートしていません。
+
+
+
+２．９．optlib.[ch]
+
+　ＣＩＬクライアント群に重要なライブラリです。オプションの処理を行ない
+ます。このライブラリを使用して、コマンドラインの解析を行なうと、オプショ
+ンの付足し削除も簡単で、マニュアル表示もすべて統一した形で表示すること
+ができます。また、オプションの値も簡単に取り出すことができます。
+　これは、おすすめのライブラリの一つです。
+
+ optlib では、大域変数に、
+
+	optcommand	コマンド名（argv[0]）
+	optargc		解析されなかった引数の数
+	optargv		解析されなかった引数のリスト
+
+があります。これは、optinit が呼ばれた後で有効になります。
+
+・void optinit( int op_argc, char **op_argv, int argc, char **argv );
+・OPTION_SETUP( char **op_argv );
+
+　コマンドラインで指定されたオプションを解析します。詳しくは、後で説明
+します。OPTION_SETUP は簡単なマクロで、コマンドラインの引数の変数とし
+てよく ( argc, argv ) が使われるので、作りました。
+
+・void optmanual( long exit_code );
+
+　オプションを整形して、マニュアルを表示します。これは、終了コードで終
+了します。
+
+
+・void optusage( long exit_code );
+
+　オプションを整形して、ユッセジを表示します。これは、終了コードで終了
+します。
+
+・void optvalue( char *op_name );
+・void optvalueint( char *op_name );
+・void optvaluefloat( char *op_name );
+
+　オプションの値を返します。文字列のポインタ、整数、実数です。
+
+・void optnvalue( char *op_name, int index );
+・void optnvalueint( char *op_name, int index );
+・void optnvaluefloat( char *op_name, int index );
+
+　オプションの値がリストの場合のときの index 番目の値を返します。文字
+列のポインタ、整数、実数です。
+
+・long optvaluenum( char *op_name );
+・char **optvaluelist( char *op_name );
+
+　オプションの値の数と、リストを返します。
+
+・long optspecified( char *op_name );
+
+　オプションが指定されたかどうかを真理値で返す。
+
+・void optset( char *op_name, char *value );
+
+　オプションに値を設定する。
+
+・void optsetvalues( char *op_name, int num, char **values );
+
+　オプションに複数の値を設定する。
+
+・void optaddarg( char *arg );
+
+　optargv に arg を追加する。
+
+○オプションリストの書き方
+
+　基本的に、オプションリストは、文字列の配列です。各文字列は、以下のよ
+うに構成されます。
+
+	"名前:指定[:引数の数][:初期値]*:説明"
+
+です。名前が "Usage:" のときは特殊な処理をして、
+
+	"Usage:コマンドライン説明"
+
+とすると、マニュアル表示の時に、
+
+	Usage: コマンド名 コマンドライン説明
+
+と表示されます。例えば、
+
+	"Usage:[options] <input> <output> [options]"
+
+とすれば、
+
+	Usage: sobel [options] <input> <output> [options]
+
+と表示されます。
+
+
+　実際に、オプションリストの例として、simpledisp のを見てみましょう。
+
+	static char *opt_list[] = {
+	  "Usage:[option] <filenames> [option]",
+	  "help:-h:Print this message",
+	  "geometry:-g:1:Window Geometry <WIDTH>x<HEIGHT>[+-]<X>[+-]<Y>",
+	  "column:-c:1:Window Column",
+	  "space:-s:1:5x5:Window Space <XSPACE>x<YSPACE>",
+	  "root:-r:display on root window",
+	  "ROOT:-R:display on root window fully",
+	};
+

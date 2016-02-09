@@ -1,0 +1,39 @@
+CC = cc -ansi
+CFLAGS = -O -I. -I../../include -I/home/abe/common/include  -I/usr/openwin/include #-Wall 
+
+BINDIR = /home/abe/common/bin/IP22
+LIBDIR = /home/abe/common/lib/IP22
+#LIBDIR = /home/abe/common/src/CIL/lib
+
+INC = /home/abe/common/include
+
+PROG1 = imagedisp
+OBJS1 = \
+	main.o \
+	initialize.o \
+	load.o \
+	open.o \
+	disp.o \
+	exec.o \
+	destrize.o \
+	server.o
+
+
+
+all : ${PROG1}
+
+${PROG1}: ${OBJS1}
+	cc -o ${PROG1} ${OBJS1} -L${LIBDIR} -lcil -lXcil -lcilext -L/home/abe/common/lib/IP22 -lX11 -lm
+
+clean :
+	rm -f *~ a.out core
+
+allclean :
+	rm -f ${PROG1}
+	rm -f *~ *.o a.out core
+
+aclean :
+	rm -f ${PROG1}
+
+install : ${PROG1}
+	cp ${PROG1} ${BINDIR}

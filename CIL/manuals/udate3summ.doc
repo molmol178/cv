@@ -1,0 +1,89 @@
+
+
+
+● CIL 特記事項
+
+  CIL のバージョンアップにともない、いろいろな機能が追加されました。
+以下は、簡単な説明です。詳しい説明は、
+
+	/home/abe/common/src/CIL/manuals/update3_and_tech.doc
+
+にありますので、必ずそちらを読んで下さい。
+
+
+
+●パイプを使った画像処理について
+
+● 画像フォーマットについて
+
+  以下のフォーマットが追加されました
+
+	read/write	XBM		X Window Bitmap Format
+	read/write	XWD		X Window Dump Format
+	write		PS		PostScript Image
+	read		PSid		PostScript Gray Image
+
+● CILmisc ライブラリについて
+
+	comacros.h 	: 共通マクロ(重要です)
+	filelib.h	: ファイル操作(パイプを考慮した関数もあるよ)
+	memlib.h	: メモリ操作
+	shmemlib.h	: 共有メモリ操作
+	optlib.h	: 便利なオプション解析と USAGE マニュアル
+	strlib.h	: 文字列操作
+	timelib.h	: 時間測定(Solarisだとまだうまく動作しない)
+	typelib.h	: CILの型管理
+
+● Xcil について
+
+	ImageCG.h	image に、直線,円,多角形,(Xwindowの)フォントなど
+	XImage.h	XImage や Drawable に、image を描くことができます。
+	XImageCG.h	XImage に、直線,円,多角形,(Xwindowの)フォントなど
+
+● Image.h の拡張について
+
+  Image に関するメソッドを拡張しました。追加された機能は以下です。
+
+○ 共有メモリについて
+
+/*================================================================*
+ * Image.createShare : 画像を生成して共有メモリで領域を確保する。
+ *================================================================*/
+/*===================================================*
+ * Image.destroyShare : 共有メモリの画像を解放する。
+ *===================================================*/
+/*==============================================================*
+ * Image.createFromKey : キー名かた共有メモリの画像を生成する。
+ *==============================================================*/
+/*===================================================================*
+ * Image.destroyShareChild : createFromKeyで生成した画像を解放する。
+ *===================================================================*/
+
+○ imagedisp について
+
+/*======================================================================*
+ * Image.displayShare : 共有メモリの画像を imagedisp を使って表示する。
+ *======================================================================*/
+/*====================================================*
+ * Image.display : imagedisp を使って画像を表示する。
+ *====================================================*/
+/*==========================================*
+ * Image.undisplay : imagedisp を終了する。
+ *==========================================*/
+
+● imagedispserver について（ちょっと混乱する話です）
+
+	CLIENT:user-program
+	  |---------------------------- message 機能
+	SERVER:imagedispserver
+	  |---------------------------- property 機能 and XSendEvent
+	CLIENT:imagedisp
+
+	imagedispserver [-r]	サーバ／サーバ解除
+	imagedisp 		言わずと知れた imagedisp
+	lsimagedisp		サーバの管理下にあるimagedispをlistする
+	rmimagedisp 		サーバの管理下にあるimagedispを削除する
+	lsproperty 		X window の RootWindow に貼られている property を表示します。
+	rmproperty		imagedisp の使っている property を解除します。
+				これは、serverがHungUpして、imagedispがないの
+				に、propertyが残っている時に使用します。

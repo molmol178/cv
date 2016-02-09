@@ -1,0 +1,24 @@
+title = sample
+xlabel = Xaxis
+ylabel = Yaxis
+label-font-name = a18
+title-font-name = a18
+ymin = 0.2
+ymax = 0.4
+xsize = 400
+ysize = 400
+line-width = 1
+dot-width = 6
+
+xcoord = (a) (b) (c) (d) (e) (f) (g) (h) (i)
+ycoord = 0.2 " " " " " " " " 0.3 " " " " " " " " 0.4
+
+data1 = data1 box      2 2
+data2 = data2 dia-fill 4 2
+data3 = data3 triangle
+data4 = data4 
+data5 = data5 
+data6 = data6 
+data7 = data7 
+data8 = data8 
+data9 = data9 

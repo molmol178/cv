@@ -1,0 +1,173 @@
+
+
+
+● Image.h の拡張について
+
+  前回、「共有メモリ」についてと「imagedisp、imagedispserver」の記事を書きま
+したが、ばっさり忘れて下さい。共有メモリのメソッドは現在ありません。しかし、
+共有メモリは使用できます。
+
+  やり方は簡単で、image を create とするときに、名前の最初の文字を、'@' にす
+れば OK です。
+
+  例えば、
+
+	label = Image.create("@label");
+	...
+	Image.make(label,Long,xsize,ysize);
+	...
+
+とすれば、自動的に共有メモリに作成します。今までと同じように画像に対する処理
+を行なうことができます。一端共有メモリに作成されると、明示的に削除しなければ、
+プログラムが終了してもいつまででも残ります(cilrm/cilserver -f)。
+
+
+
+● 共有メモリファイル
+
+  CIL では、ファイル名の指定の時に共有メモリの名前を指定することができます。
+つまり、CIL で書かれたプログラムであれば、共有メモリもファイルも区別なく扱う
+ことができます。
+
+	imagedisp @test
+		（共有メモリ上の "@test" を表示する）
+
+  共有メモリの画像の情報を知るためのコマンドをいくつか用意してあります。
+
+	cills	共有メモリの内容を list する。
+	cilcp	ファイルや共有メモリ間のコピーをする。
+	cilrm	共有メモリの画像を削除する。
+
+  また、これらのサービスをするためのサーバがあります。
+
+	cilserver
+
+  これを起動すると、各ユーザごとに CIL で使用するテーブルが作られます。一端
+起動すると、テーブルはずっと残ります。このテーブルは、
+
+	% cilserver -f
+
+で解除できます。終了する時は、必ず実行しておきましょう。これは、共有メモリの
+解放も同時に行ないます。
+
+
+
+● imagedisp について
+
+  さらに imagedisp が拡張されて、ユーザプログラムから imagedisp のイベントを
+取り出すことができます。
+									    
+  ImageDisp.h を新たに作成しました。imagedisp からのイベントをとるために、ユー
+ザが使用するものは、以下のものです。
+
+イベントのマスクを設定する。
+
+	long ImageDispSelectEvent
+	  P2 (( image, self ),
+	      ( long , mask ))
+
+イベントを取ってくる。
+
+	long ImageDispNextEvent
+	  P2 (( image     , self  ),
+	      ( CILEvent *, event ))
+
+	long ImageDispCheckEvent
+	  P2 (( image     , self  ),
+	      ( CILEvent *, event ))
+
+  イベントは、いまのところ、
+
+	MouseMove	マウスが動いた
+	MousePress	マウスボタンが押された
+	MouseRelease	マウスボタンが離された
+	MouseEnter	マウスがウインドウに入ってきた
+	MouseLeave	マウスがウインドウから出た
+	KeyboardPress	キーボードが押された
+	KeyboardRelease	キーボードが離された
+	ImageExpose	書き直しイベント
+
+です。つねに、一番最後のイベントだけを記録しています。
+何もイベントがなければ、
+
+	NoEvent		イベントはない
+
+を event.type に設定します。
+
+簡単な例を示します。
+
+	{
+	  image img;
+	  ...
+	  img = Image.createFromFilename(fname,fname);
+	  ...
+	  Image.display(img,0);
+	  ImageDispSelectEvent( img, MousePressMask|MouseMoveMask|KeyboardPress );
+
+	  while ( 1 )
+	  {
+	    CILEvent e;
+	    ImageDispNext( img, &e );
+
+	    switch ( e.type )
+	      {
+	      case MousePress:
+		if ( e.mouse.button == 1 )
+		  press_event( img, e.mouse.x, e.mouse.y );
+		break;
+
+	      case MouseMove:
+		move_event( img, e.mouse.x, e.mouse.y );
+		break;
+
+	      case KeyboardPress:
+		if ( e.keyboard.ascii == 'q' ) quit();
+		break;
+
+	      default:
+		break;
+	      }
+	  }
+	  ...
+	}
+
+イベント構造体は、以下の意味を持ちます。
+
+	event.type		イベントの種類
+				ImageExpose
+				MouseMove, MousePress, MouseRelease
+				KeyboardPress, KeyboardRelease
+
+	event.mouse.button	押された時のボタンの種類（１，２，３）
+	event.mouse.x		押された画像上でのx座標
+	event.mouse.y		押された画像上でのy座標
+	event.mouse.window_x	押されたWindow上でのx座標
+	event.mouse.window_y	押されたWindow上でのy座標
+
+	event.keyboard.ascii	押された時のキーのアスキーコード
+	event.keyboard.x	押された画像上でのx座標
+	event.keyboard.y	押された画像上でのy座標
+	event.keyboard.window_x	押されたWindow上でのx座標
+	event.keyboard.window_y	押されたWindow上でのy座標
+	event.keyboard.keysym	押された時のキーのシンボル
+
+
+
+● 共有メモリを使ったら忘れちゃいけないこと
+
+  logout する時に、必ず、ＣＩＬサーバを終了して、共有メモリを解放しておきま
+しょう。
+
+	cilserver -f
+
+  で OK です。
+
+
+
+● 共有メモリの使用上の注意
+
+  Solaris では、一つのプロセスで共有メモリを同時にアタッチできる数が制
+限されています。６個までです。６以上同時に画像を参照する場合は、注意し
+て下さい。共有メモリなので Image.destroy / Image.free しても、残ります
+ので、使用しない共有メモリ画像は、一端、Image.free しておきましょう。
+後で使う場合は、Image.load / Image.make しましょう。

@@ -1,0 +1,129 @@
+
+
+
+●NAMEテーブル
+
+  NAMEテーブルは、各ユーザが持つ。
+  最初に、NAMEテーブルの数を指定する。
+
+データは、
+
+	NAME		キーとなる名前
+	KEY		キーそのもの
+	FILENAME	FILENAME
+	DISPLAY		IMAGEDISPなどのDISPLAY名
+	SOCKETNAME	IMAGEDISPなどのソケット名
+	IMAGEDISPEXEC	IMAGEDISPが起動しているかどうか
+	EVENTQUEUEREADY	IMAGEDISPのイベントキューがあるかどうか
+
+
+● USER METHOD
+
+void nameadd(name);
+これでもって、すべてのテーブルの要素が決定できる。
+
+void namedel(name);
+NAMEを削除する。IMAGEDISPも削除される。
+
+
+● SYSTEM METHOD 参照するための関数 
+void __namefree();
+void __nameinit();
+nameRec *nameinfo(char *name);
+
+●IMAGEDISPソケット名の構成
+
+	/tmp/cil<uid><name>	３２文字
+
+●IMAGEDISPテンポラリイメージファイル名の構成
+
+	/tmp/#<uid><name>#	３２文字
+
+●NAMEテーブル名の構成
+
+	NM+<uid>
+	NAME<uid>
+
+●名前の規制
+
+	@<name>			共有メモリ
+		#<name>		共有メモリファイルセーブ（どちらでもよい）
+	<name>			普通の名前
+
+	UNIXのファイルで使用できる文字で１５文字。
+
+
+●IMAGEDISPの起動
+
+  long ImageDispExec(image,opt);
+  system( "imagedisp -D %s -sock %s %s &\n", display, socketname, name );
+  while ( ImageDispTest( name ) == 0 );
+
+●IMAGEDISPのテスト
+
+  long ImageDispTest( name )
+
+  socketname = namesocket( name );
+  fd = socketconnect( socketname );
+  if ( fd < 0 ) return 0;
+  type = TEST;
+  socketwrite( fd, ( char * )&type, 4 );
+  state = socketread( fd, ( char * )&type, 4 );
+  socketclose( fd );
+  if ( state == 4 ) return 1;
+  return 0;
+
+●IMAGEDISPの終了
+
+  ImageDispQuit(image);
+  socketname = namesocket( name );
+  fd = socketconnect( name );
+  if ( fd < 0 ) return -1;
+  type = QUIT;
+  socketwrite( fd, ( char * )&type, 4 );
+  socketclose( fd );
+
+●IMAGEDISPの表示
+
+  ImageDispDraw(image);
+
+  if ( name[ 0 ] != '@' ) imagewrite( img, "/tmp/#%d%s", uid, name );
+  socketname = namesocket( name );
+  fd = socketconnect( socketname );
+  if ( fd < 0 ) return -1;
+  type = DISPLAY;
+  socketwrite( fd, ( char * )&type, 4 );
+  socketclose( fd );
+
+●IMAGEDISPのイベント要求
+
+  ImageDispSelectEvent( image img, long mask );
+  ImageDispNextEvent( image img, CILEvent *event );
+
+  CILEvent {
+    long type; /* ImageExpose, MouseMove, MousePress, MouseRelease */
+    long button;
+    long x, y;
+    long delt_x, delta_y;
+    long window_x, window_y;
+  };
+
+  socketname = namesocket( name );
+  fd = socketconnect( name );
+  if ( fd < 0 ) return -1;
+  type = EVENT;
+  socketwrite( fd, ( char * )&type, 4 );
+  socketread( fd, ( char * )&event, sizeof( CILEvent ) );
+  socketclose( fd );
+
+  EVENT.TYPE: NONE, MOUSE_MOTION, MOUSE_PRESS, MOUSE_RELEASE, EXPOSE
+
+●IMAGEDISP
+
+  起動したら、イベントループの中に、selectを入れる。
+  イベントをスプールするならする。
+
+
+●その他
+
+  @<name> でのセーブとロードは、共有メモリから行なわれます。

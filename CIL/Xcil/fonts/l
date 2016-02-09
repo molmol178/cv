@@ -1,0 +1,29 @@
+ifconv j4 dir16-9.j4 dir
+mv dir dir16-9.j4
+j4totext dir16-9.j4 > dir16-9.txt
+
+ifconv j4 dir4-3.j4 dir
+mv dir dir4-3.j4
+j4totext dir4-3.j4 > dir4-3.txt
+
+ifconv j4 dir4-5.j4 dir
+mv dir dir4-5.j4
+j4totext dir4-5.j4 > dir4-5.txt
+
+ifconv j4 dir4-7.j4 dir
+mv dir dir4-7.j4
+j4totext dir4-7.j4 > dir4-7.txt
+
+ifconv j4 dir8-5.j4 dir
+mv dir dir8-5.j4
+j4totext dir8-5.j4 > dir8-5.txt
+
+ifconv j4 dir8-7.j4 dir
+mv dir dir8-7.j4
+j4totext dir8-7.j4 > dir8-7.txt
+
+ifconv j4 dir8-9.j4 dir
+mv dir dir8-9.j4
+j4totext dir8-9.j4 > dir8-9.txt
+
+

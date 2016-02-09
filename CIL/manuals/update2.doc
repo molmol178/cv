@@ -1,0 +1,39 @@
+１９９３年９月２２日（水曜日）
+
+
+● CIL の変更のお知らせです。
+
+  CIL の Type.h, Array.h, Memory.h String.h Option.h, File.h, ...
+など、ほとんど使われてないものを削除しました。
+
+  特に、Type.h の変更にともなって、プログラムの変更が少し必要です。
+
+  Image.make や、 Image.createMake など、metatype を引数に持つものは、
+変更しなければなりません。
+
+今までは、
+
+	Image.make(img,UChar3.type,xsize,ysize);
+
+でしたが、新しいのでは、
+
+	Image.make(img,UChar3,xsize,ysize);
+
+となり、".type" は必要なくなります。
+
+	UChar.type --> UChar
+	UChar3.type --> UChar3
+	...
+
+すべて、".type" をとって下さい。
+
+また、削除したものに関して、もし使っていたら、代わりのものがあります。
+
+	Type.h --> typelib.h
+	String.h --> strlib.h
+	Option.h --> optlib.h
+	File.h --> filelib.h
+	Memory.h --> memlib.h or shmemlib.h (共有メモリ)
+
+となっています。詳しい使い方は、これらのヘッダファイルを見て下さい。
+ヘッダファイルがマニュアルの代わりになります。（と思う）。

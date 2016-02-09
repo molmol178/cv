@@ -1,0 +1,81 @@
+/*
+ * Usage : color [input] [output] r g b
+ */
+
+#include "Image.h"
+#include "misc/optlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+void image__coloring(image output, image input, uchar3 col);
+
+char *option[] = {
+  "The coloring of a gray-scale image.",
+  "input:*:1:(image) name of the input uchar image",
+  "output:*:1:(image) name of the output uchar3 image",
+  "red:*:1:(uchar) red value",
+  "green:*:1:(uchar) green value",
+  "blue:*:1:(uchar) blue value",
+  "help:-h:print help messages",
+};
+
+int main(int argc,char *argv[])
+{
+  image src, del;
+  char *input;
+  char *output;
+  uchar3 col;
+
+  OPTION_SETUP( option );
+
+  if ( argc == 1 ) optusage( 1 );
+  if ( optspecified( "help" ) ) optmanual( 1 );
+
+  input  = optvalue("input");
+  output = optvalue("output");
+  col.at[0] = optvalueint("red");
+  col.at[1] = optvalueint("green");
+  col.at[2] = optvalueint("blue");
+
+  src = Image.createFromFilename( "SOURCE", input );
+  del = Image.create( output );
+  if ( src == 0 )
+    {
+      fprintf( stderr, "strength:can't open file %s\n", input );
+      exit( -1 );
+    }
+  if ( __TYPE( src ) != UChar )
+    {
+      fprintf( stderr, "strength:image is wrong %s\n", input );
+      exit( -1 );
+    }
+
+  image__coloring( del, src, col );
+  Image.save( del, output, "coloring" );
+
+  Image.destroy( src );
+  Image.destroy( del );
+
+  return 0;
+}
+
+
+
+void image__coloring(image output, image input, uchar3 col)
+{
+  register long x, y;
+
+  Image.make( output, UChar3, __XSIZE( input ), __YSIZE( input ) );
+
+  for ( y = 0; y < __YSIZE( input ); y++ )
+    for ( x = 0; x < __XSIZE( input ); x++ )
+      {
+	long gray = __PIXEL( input, x, y, uchar );
+	uchar3 p;
+	p.at[0] = (long)(255-gray)*col.at[0]/255;
+	p.at[1] = (long)(255-gray)*col.at[1]/255;
+	p.at[2] = (long)(255-gray)*col.at[2]/255;
+	__PIXEL( output, x, y, uchar3 ) = p;
+      }
+}

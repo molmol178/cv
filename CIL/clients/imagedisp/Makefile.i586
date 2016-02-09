@@ -1,0 +1,39 @@
+CC = gcc
+CFLAGS = -O -I../../include -I/home/abe/common/include  -I/usr/openwin/include #-Wall 
+
+BINDIR = /home/abe/common/bin/i586
+LIBDIR = /home/abe/common/lib/i586
+
+INC = /home/abe/common/include
+LIB = /usr/X11/lib
+
+PROG1 = imagedisp
+OBJS1 = \
+	main.o \
+	initialize.o \
+	load.o \
+	open.o \
+	disp.o \
+	exec.o \
+	destrize.o \
+	server.o
+
+
+
+all : ${PROG1}
+
+${PROG1}: ${OBJS1} ${LIBDIR}/libcil.a ${LIBDIR}/libXcil.a ${LIBDIR}/libcilext.a
+	cc -o ${PROG1} ${OBJS1} -L${LIBDIR} -lcil -lXcil -lcilext -L${LIB} -lX11 -lcil -lm
+
+clean :
+	rm -f *~ a.out core
+
+allclean :
+	rm -f ${PROG1}
+	rm -f *~ *.o a.out core
+
+aclean :
+	rm -f ${PROG1}
+
+install : ${PROG1}
+	install ${PROG1} ${BINDIR}

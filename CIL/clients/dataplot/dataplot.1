@@ -1,0 +1,146 @@
+DATAPLOT(1)                USER COMMAND                      DATAPLOT(1)
+
+名前
+	dataplot - 数値データファイルをグラフ表示する。
+
+使用法
+	dataplot -f <configure-file> [datafiles] [options]
+	dataplot [options] <datafiles> [options]
+
+説明
+	  dataplot は、x,y 数値データファイルを Xwindow 上にグラフ表示
+	します。x 座標の値は通常ラベルで与えられ数値で与えられた場合は、
+	無視されます。また、x,y 数値データファイルでなく、y だけのデー
+	タファイルでも読み込めます。
+	  -f オプションでコンフィグ・ファイルを指定すると、そのファイ
+	ルにしたがってグラフを書きます。データファイルを指定すると、そ
+	のファイルを表示します。
+	  'q' で終了します。
+
+オプション
+
+	-help
+	  簡単な使用法を表示します。
+
+	-f <configure-file>
+	  コンフィグ・ファイルを指定します。これを指定すると、コンフィ
+	グ・ファイルを読み込んでからオプションを読みます。だから、オプ
+	ションが優先されます。
+
+	-tf <title-font-name>
+	  タイトルを表示するためのフォントを指定します。タイトルとは、 
+	データのタイトルと、x 座標の名前、y 座標の名前です。
+
+	-lf <label-font-name>
+	  ラベルを表示するためのフォントを指定します。ラベルとは、x 軸
+	と y 軸の値のことです。
+
+	-ymin <ymin>
+	-ymax <ymax>
+	  y 座標の最小値、最大値を指定します。指定されなかった場合は、
+	自動設定を試みます。
+
+	-xs <xsize>
+	-ys <ysize>
+	  ウインドウのサイズを指定します。
+
+	-dw <dot-widtth>
+	  折れ線グラフの折れ目の点の大きさを指定します。０を指定すると
+	点は表示されません。
+
+	-mw <moat-width>
+	  ウインドウの周囲の溝の幅を指定します。
+
+	-ss <string-space>
+	  文字列とのスペースを指定します。
+
+	-lw <line-width>
+	  折れ線グラフの線の幅を指定します。
+
+	-ll <line-length>
+	  右上に表示する、折れ線のラインスタイルを表示する線の長さを指
+	定します。
+
+	-gx <graph-xsize>
+	-gy <graph-ysize>
+	  グラフの x, y の大きさを指定します。これを指定すると、ウイン
+	ドウの大きさを変更できなくなります。
+
+コンフィグ・ファイル
+
+	  コンフィグ・ファイルは、パラメータと値からなるテキスト・ファ
+	イルです。記述形式は、
+
+	<parameter> = <value> <value> ...
+
+	となります。一行で一つのパラメータが指定可能です。また、行の最
+	初が、'%' の場合はコメントとなります。"(ダブルクオート)で囲ま
+	れた領域は一つと見なされます。
+	  以下に、パラメータの説明をします。
+
+	label-font-name = <font-name>
+	title-font-name = <font-name>
+	title = <string>
+	xlabel = <string>
+	ylabel = <string>
+	ymin = <real>
+	ymax = <real>
+	xsize = <integer>
+	ysize = <integer>
+	graph-xsize = <integer>
+	graph-ysize = <integer>
+	dot-width = <integer>
+	moat-width = <integer>
+	string-space = <integer>
+	line-width = <integer>
+	line-llength = <integer>
+
+	以上は、オプションと同じなので、説明は省略します。
+
+	xcoord = <label> <label> ...
+	  x 座標のラベルを指定します。これを指定すると、データ・ファイ
+	ルから指定されたラベルだけを表示します。また、省略された場合は、
+	順番に、(a), (b), (c) ... と付けられます。もし、データ・ファイ
+	ルに指定されたラベルがなければ、先頭から順番にとっていきます。
+
+	ycoord = <label> <label> ...
+	  y 座標のラベルを指定します。どこに補助線を引くのか指定できま
+	す。指定されていなければ、自動設定を試みます。また、ラベルは小
+	さい方から大きい方へ指定して下さい。線だけ表示したくて、値は表
+	示したくない時は、" " を指定して下さい。
+
+	<datafile> = <title> <dot-shape> <dash> <dash> ...
+	  データ・ファイルとその表示方法を指定します。<title>は、右上
+	に表示されるタイトルです。<dot-shape>は、折れ線グラフの折れ目
+	の点の形です。<dot-shape>の種類は、
+		oval, oval-filll,
+		box, boxfill,
+		triangle, triangle-filll,
+		dia, dia-fil,
+		cross
+	です。<dash>は、破線のパターンの指定です。黒、白のドット数ごと
+	に順番に指定していきます。<dash>の数は偶数でなければなりません。
+
+データ・ファイル
+
+	  データ・ファイルは、テキスト形式で以下のようなものです。
+
+	<label> <double>
+	<label> <double>
+	<label> <double>
+	 ...
+
+	ラベルは xcoord で指定されるラベルです。
+	また、ラベルがないファイル、
+
+	<double>
+	<double>
+	 ...
+
+	でもいいです。
+
+バグ・その他
+
+	  いまのところありません。もしみつかったら、いかのところまで知
+	らせてください。
+	sugiyama@cs.shizuoka.ac.jp

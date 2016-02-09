@@ -1,0 +1,96 @@
+
+●プログラムの変更について…
+
+
+大きく変わったところは、３つあって、
+
+	１：メタタイプのヘッダファイル（UChar.h,UChar3.h）はなくなった。
+	２：画像のファイル関係の操作が変わった。
+	３：使用頻度の少ないメソッドを減らした。
+	４：ライブラリ本体の名前が変わった。
+
+ということです。
+そのために、以下の変更を行なって下さい。
+
+
+
+１：に関して
+
+	すべての、メタタイプのヘッダファイルの include を取り除く。
+	これらは、すべて宣言してあるので一つ一つ読み込む必要がなくなった。
+
+
+
+２：に関して
+
+	J4, GIF, ... がすべてなくなった。
+	かわりに、ImageFile というのができた。
+
+	J4.save(src,filename,comment);
+	GIF.save(src,filename,100);
+	Image.save(src,filename,TIFF.format);
+
+	は、
+
+	#include "ImageFile.h"
+	...
+	ImageFile.setSaveFormat("J4");
+	Image.save(src,filename,comment);
+
+	ImageFile.setSaveFormat("GIF");
+	Image.save(src,filename,comment);
+
+	ImageFile.setSaveFormat("TIFF");
+	Image.save(src,filename,comment);
+
+	のように変更する。
+	このImageFileのセーブフォーマットのデフォルトは、C2Dです。
+
+	つまり、すべて、Image.save を使用することです。フォーマットを
+	指定したいときは、ImageFile.hをインクリュードして
+
+	ImageFile.setSaveFormat(フォーマット名)
+	フォーマット名：J4,C2D,PPM,GIF,TIFF,S3D,JPEG：(すべて大文字)
+
+	をすればセーブフォーマットは変更されます。
+
+	コメントはできるだけ、入れるようにしましょう。この画像は、どの
+	画像をどのような処理をした画像か、どんなパラメータを使用したの
+	か、など。あとで困らないために…。
+
+
+
+３：に関して
+
+	Image についてだけ説明します。
+
+	変更/削除		変わりのもの
+
+	createFromImage		create してから copy
+	createFromData		使用されてなかったので
+	remake			make
+	shift			sub を使ってできる
+	scale			resize,
+	reverse			Image/Funcs.h の image__reverse
+	subImage		sub
+	send			なし
+	save			save(引数が変わった)
+	get,put			もともの使われなかったので
+
+	新しく付け加わったもの
+	swap(src1,src2) --- src1 と src2 の画像の内容を入れかえます。
+
+
+
+４：に関して
+
+	ライブラリ本体の名前は、
+
+	libobj.a ---> libcil.a
+	libobj.so.1 ---> libcil.so.1
+
+	にしましたので、いままで alias しておいたのは、すべて変更して下さい。
+
+	alias	cil	'cc \!* -I/home/abe/common/include -L/home/abe/common/lib/sun4 -lcil'
+	alias	cilm	'cc \!* -I/home/abe/common/include -L/home/abe/common/lib/sun4 -lcil -lm'
+			

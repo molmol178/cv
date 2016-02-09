@@ -1,0 +1,66 @@
+
+
+
+● 画像ファイルの読み込みについて
+
+  環境変数に画像の入っているディレクトリをセットしておけば、
+そのディレクトリから読み込みができます。
+
+  環境変数名は、
+
+	IMAGE_DIR
+
+です。
+
+  例えば、以下のように指定します。
+
+	setenv IMAGE_DIR "/home/abe/common/j4file:/work/sugiyama/image"
+
+こうしておくと、
+
+	Image.load
+	Image.createFromFilename
+
+が呼ばれた時に、指定したファイルがカレントディレクトリになかった場合、
+IMAGE_DIR で指定したディレクトリを、前から順番に探しにいきます。
+
+つまり、
+
+	imagedisp fruit
+
+とした場合、
+
+	./fruit
+	/home/abe/common/j4file/fruit
+	/work/sugiyama/image/fruit
+
+の順にファイルを探しにいきます。
+
+  .cshrc などに、設定しておくと便利です。
+
+
+
+● 拡張子について
+
+  CILでは、画像の拡張子を省略することができます。
+拡張子の優先順位は、
+
+	j4   [rgb]			…Ｊ４ファイル
+	pbm  pgm  ppm			…pbmplus
+	c2d				…Ｃ２Ｄ
+	tiff  tif  viff  vif		…TIFF/VIFF
+	gif				…GIF
+	Z				…compress
+	m				…Ｊ４ファイルなど
+	bmp				…ビットマップ
+
+となっています。
+
+
+
+● 読み込み／書き込みフォーマット
+
+  現在、CILで読み書きできるフォーマットです。
+
+読み込み：C2D/PNM/J4/TIFF/VIFF/GIF/S3D/XBITMAP/XWD/DIB/JPEG
+書き込み：C2D/PNM/J4/TIFF/VIFF/GIF/XBITMAP/XWD/JPEG/PS

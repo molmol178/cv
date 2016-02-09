@@ -1,0 +1,175 @@
+/*
+ * filename : halfsize.c
+ * author   : Takahiro Sugiyama
+ * date     : Wednesday, March 16 1994
+ * describe : image half size
+ */
+
+
+
+#include "Image.h"
+#include "misc/optlib.h"
+#include "misc/typelib.h"
+#include <stdio.h>
+
+
+static char *option[] = {
+  "input:*:1:(image) name of the input image",
+  "output:-o:1:(image) name of the output image",
+  "help:-h:print this messages",
+};
+
+
+
+static void halfsize
+  P1 (( image, half ))
+
+int main( argc, argv )
+     int argc;
+     char *argv[];
+{
+  image half;
+  char *input, output[ 256 ];
+
+  OPTION_SETUP( option );
+
+  if ( optspecified( "help" ) ) optmanual( 1 );
+  if ( argc == 1 ) optusage( 1 );
+
+  input = optvalue( "input" );
+  sprintf( output, "%s.half", input );
+  optifspecifiedcopy( "output", output );
+
+  half = Image.createFromFilename( "HALF", input );
+
+  halfsize( half );
+
+  Image.save( half, output, "HALF SIZE" );
+
+  return 0;
+}
+
+
+
+static void halfsize_bit1
+  P1 (( image, half ))
+
+static void halfsize_uchar
+  P1 (( image, half ))
+
+static void halfsize_uchar3
+  P1 (( image, half ))
+
+static void halfsize
+  _P1 (( image, half ))
+{
+  switch ( __TYPE( half ) )
+    {
+    case Bit1:
+      halfsize_bit1( half );
+      break;
+    case UChar:
+      halfsize_uchar( half );
+      break;
+    case UChar3:
+      halfsize_uchar3( half );
+      break;
+    default:
+      fprintf( stderr, "not supported this type (%s)",
+	      typename( __TYPE( half ) ) );
+    }
+}
+
+
+
+static void halfsize_uchar
+  _P1 (( image, full ))
+{
+  register int x, y, x2, y2, xsize, ysize;
+  register uchar **data_full;
+  register uchar **data_half;
+  image half;
+
+  xsize = __XSIZE( full ) / 2;
+  ysize = __YSIZE( full ) / 2;
+  half = Image.createMake( "HALFSIZE", __TYPE( full ), xsize, ysize );
+
+  data_full = __DATA( full, uchar );
+  data_half = __DATA( half, uchar );
+
+  for ( y2 = y = 0; y < ysize; y++, y2 += 2 )
+    for ( x2 = x = 0; x < xsize; x++, x2 += 2 )
+      data_half[y][x] = (data_full[y2  ][x2  ] +
+			 data_full[y2+1][x2  ] +
+			 data_full[y2  ][x2+1] +
+			 data_full[y2+1][x2+1])/4;
+
+  Image.copy( full, half );
+  Image.destroy( half );
+}
+
+
+static void halfsize_bit1
+  _P1 (( image, full ))
+{
+  register int x, y, x2, y2, xsize, ysize;
+  register bit1 **data_full;
+  register bit1 **data_half;
+  image half;
+
+  xsize = __XSIZE( full ) / 2;
+  ysize = __YSIZE( full ) / 2;
+  half = Image.createMake( "HALFSIZE", __TYPE( full ), xsize, ysize );
+
+  data_full = __DATA( full, bit1 );
+  data_half = __DATA( half, bit1 );
+
+  for ( y2 = y = 0; y < ysize; y++, y2 += 2 )
+    for ( x2 = x = 0; x < xsize; x++, x2 += 2 ) {
+      if ((data_full[y2][x2]) || (data_full[y2][x2] + data_full[y2+1][x2  ] + 
+	   data_full[y2  ][x2+1] + data_full[y2+1][x2+1]) > 2)
+	data_half[y][x] = 1;
+      else
+	data_half[y][x] = 0;
+    }
+
+  Image.copy( full, half );
+  Image.destroy( half );
+}
+
+
+
+static void halfsize_uchar3
+  _P1 (( image, full ))
+{
+  register int x, y, x2, y2, xsize, ysize;
+  register uchar3 **data_full;
+  register uchar3 **data_half;
+  image half;
+
+  xsize = __XSIZE( full ) / 2;
+  ysize = __YSIZE( full ) / 2;
+  half = Image.createMake( "HALFSIZE", __TYPE( full ), xsize, ysize );
+
+  data_full = __DATA( full, uchar3 );
+  data_half = __DATA( half, uchar3 );
+
+  for ( y2 = y = 0; y < ysize; y++, y2 += 2 )
+    for ( x2 = x = 0; x < xsize; x++, x2 += 2 )
+      {
+	data_half[y][x].at[0] = (data_full[y2  ][x2  ].at[0] +
+				 data_full[y2+1][x2  ].at[0] +
+				 data_full[y2  ][x2+1].at[0] +
+				 data_full[y2+1][x2+1].at[0])/4;
+	data_half[y][x].at[1] = (data_full[y2  ][x2  ].at[1] +
+				 data_full[y2+1][x2  ].at[1] +
+				 data_full[y2  ][x2+1].at[1] +
+				 data_full[y2+1][x2+1].at[1])/4;
+	data_half[y][x].at[2] = (data_full[y2  ][x2  ].at[2] +
+				 data_full[y2+1][x2  ].at[2] +
+				 data_full[y2  ][x2+1].at[2] +
+				 data_full[y2+1][x2+1].at[2])/4;
+      }
+  Image.copy( full, half );
+  Image.destroy( half );
+}

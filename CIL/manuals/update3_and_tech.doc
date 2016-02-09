@@ -1,0 +1,301 @@
+
+
+
+● CIL 特記事項
+
+  CIL のバージョンアップにともない、いろいろな機能が追加されました。
+以下に、CIL の追加機能やパイプを使った便利な画像処理方法について説明します。
+
+
+
+●パイプを使った画像処理について
+
+  CIL の画像読み込みルーチンの改良にともなって、画像処理コマンドをパイ
+プでつないで、処理することができるようになりました。
+
+  とりあえず、基本的な画像処理プログラムを今まで通りに作ります。後は、
+ファイルの指定に対して、標準入力は "stdin"、標準出力 "stdout"、もしく
+は、"-" を指定すれば、それぞれのファイルに出力します。
+
+  例えば、以下の例は、
+
+	average   : カラー画像の各成分の平均をとる。
+	median    : メディアンフィルタを４回ほどこす。
+	downtone  : 濃度値を１６段階に落す。
+	labeling  : クラスタと見てラベリングする。
+	imagedisp : 結果を出力する。
+
+	こういった一連の操作が、以下のようにできます。
+
+	earth% average /home/abe/common/j4file/gra2 | median 4 | downtone 16 | labeling | imagedisp -
+
+  パイプを主に使うプログラムを書く時には、引数を統一した方がいいでしょ
+う。以下のような引数の指定方法で統一してみてはどうでしょうか？
+
+	○コマンド引数の指定方法（パラメータの位置は賛否両論だと思う）
+
+	<commandname> [param1] [param2] ... [input] [output] 
+
+	○なにも指定しなかったら、標準入力から受けとって、標準出力に出す。
+
+	例えば、median は、
+
+	Usage : median [times] [median] [input] [output]
+
+	となっています。
+
+	○パラメータの指定をデフォルトで使用したいときは、"-" を指定する。
+
+	median - - girl.g
+
+
+  パイプの方式だと、画像は一枚しか送れません。だから、「画像を一枚入力
+して、画像を一枚出力する」ものが有効だと思います。このサンプルプログラ
+ムは、 CIL/sample/pipe にあります。作る時は、参考にして下さい。
+  なにかみんがな使いそうなのは、
+
+	/home/abe/common/src/CIL/clients/util/pipe
+
+に入れておいて下さい。そうすれば、同じものを作るというのは、極力避ける
+ことができるでしょう。
+
+
+
+● 画像フォーマットについて
+
+  以下のフォーマットが利用できます。
+
+	read/write	XBM		X Window Bitmap Format
+	read/write	XWD		X Window Dump Format
+	write		PS		PostScript Image
+	read		PSid		PostScript Gray Image
+
+
+
+● CILmisc ライブラリについて
+
+  CIL を構成する基本操作関数群です。ヘッダファイルが簡易マニュアルになっ
+ています。ヘッダファイルを見れば関数と引数はわかります。CIL/misc にあ
+ります。
+
+	comacros.h 	: 共通マクロ(重要です)
+	filelib.h	: ファイル操作(パイプを考慮した関数もあるよ)
+	memlib.h	: メモリ操作
+	shmemlib.h	: 共有メモリ操作
+	optlib.h	: 便利なオプション解析と USAGE マニュアル
+	strlib.h	: 文字列操作
+	timelib.h	: 時間測定(Solarisだとまだうまく動作しない)
+	typelib.h	: CILの型管理
+
+
+
+● Xcil について
+
+  X window とのインタフェースを行なうための関数群が入っています。主に、
+グラフィックルーチンです。以下の３つのヘッダファイルがあって、それぞれ、
+使いたい時に インクリュードして下さい。また、コンパイル時には、-lXcil
+を指定して下さい。
+
+	ImageCG.h	image に、直線,円,多角形,(Xwindowの)フォントなど
+	XImage.h	XImage や Drawable に、image を描くことができます。
+	XImageCG.h	XImage に、直線,円,多角形,(Xwindowの)フォントなど
+	cglib.h		CG を構成するためのテンプレートです。（使わない）
+
+
+
+● Image.h の拡張について
+
+  Image に関するメソッドを拡張しました。追加された機能は以下です。
+
+○ 共有メモリについて
+
+  共有メモリについては、キー名は最初４文字まで有効です。これで、生成し
+た画像は、サイズを変えなければ、他の Image のメソッドは使えます。通常、
+異なるプロセス間でデータをやりとりする場合に使います。
+
+/*================================================================*
+ * Image.createShare : 画像を生成して共有メモリで領域を確保する。
+ *================================================================*/
+  image ( *createShare )       /*    return 画像型	   */
+	P4 (( char *, name  ), /* #1 input  画像名／キー名 */
+	    ( long  , type  ), /* #2 input  画素の型識別子 */
+	    ( long  , xsize ), /* #3 input  Ｘサイズ	   */
+	    ( long  , ysize )) /* #4 input  Ｙサイズ	   */
+
+/*===================================================*
+ * Image.destroyShare : 共有メモリの画像を解放する。
+ *===================================================*/
+  void ( *destroyShare )
+	P1 (( image, self )) /* #1 input 画像型 */
+
+/*==============================================================*
+ * Image.createFromKey : キー名かた共有メモリの画像を生成する。
+ *==============================================================*/
+  image ( *createFromKey )
+	P1 (( char *, name )) /* #1 input キー名 */
+
+/*===================================================================*
+ * Image.destroyShareChild : createFromKeyで生成した画像を解放する。
+ *===================================================================*/
+  void ( *destroyShareChild )
+	P1 (( image, self )) /* #1 input 画像型 */
+
+
+
+○ imagedisp について
+
+  共有メモリでない場合は、一端ファイルに書き出します。だから、短いタイ
+ミングで画像の書き直しが必要な場合は、共有メモリを使用して下さい。一端、
+起動した imagedisp は、同じ名前をもつ画像に対して、display を呼べば、
+そのまま何度も使えます。実験の出力結果や、中間結果、デモなどに便利です。
+
+  これを使う時は、imagedispserver を使用して下さい。（後に説明があります）
+
+/*======================================================================*
+ * Image.displayShare : 共有メモリの画像を imagedisp を使って表示する。
+ *======================================================================*/
+  void ( *displayShare )
+	P2 (( image , self ), /* #1 input 画像型		 */
+	    ( char *, opt  )) /* #2 input imagedisp のオプション */
+
+/*====================================================*
+ * Image.display : imagedisp を使って画像を表示する。
+ *====================================================*/
+  void ( *display )
+	P2 (( image , self ), /* #1 input 画像型		 */
+	    ( char *, opt  )) /* #2 input imagedisp のオプション */
+
+/*==========================================*
+ * Image.undisplay : imagedisp を終了する。
+ *==========================================*/
+  void ( *undisplay )
+	P1 (( image , self )) /* #1 input 画像型 */
+
+
+
+● imagedispserver について（ちょっと混乱する話です）
+
+  先の機能を実現するために、クライアント・サーバモデルをとっています。
+
+	CLIENT:user-program
+	  |---------------------------- message 機能
+	SERVER:imagedispserver
+	  |---------------------------- property 機能 and XSendEvent
+	CLIENT:imagedisp
+
+  このように、user-program と imagedispserver は、 message 機能を使っ
+て通信し、imagedispserver と imagedisp は、property 機能と XSendEvent 
+を使っています。
+
+  これに関するコマンド群があります。
+
+imagedispserver [-r]	サーバ／サーバ解除
+imagedisp 		言わずと知れた imagedisp
+lsimagedisp		サーバの管理下にあるimagedispをlistする
+rmimagedisp 		サーバの管理下にあるimagedispを削除する
+lsproperty 		X window の RootWindow に貼られている property を表示します。
+rmproperty		imagedisp の使っている property を解除します。
+			これは、serverがHungUpして、imagedispがないの
+			に、propertyが残っている時に使用します。
+
+	（＊ X の propety について知りたい人は、「プログラミングXWindow」を見るか、
+	     sugiyama に聞いて下さい。）
+
+
+  現在のサーバには問題点が一つあります（たくさんかな？）。property は、
+root window １つに対し、１つ。また、現在の imagedispserver では、USER、
+DISPLAY を区別しません（1 DISPLAY,N USERS -- 1 SERVER）。
+imagedispserver は １つのホストに１つしか起動できません（起動できるけ
+ど、起動すると競合しあう）。
+
+DISPLAY を区別していないと、rlogin で imagedisp を使うときは、注意が必要です。
+
+例えば…
+
+    例１
+	imaegdispserver を複数起動して、競合が起こり、takahiro が混乱
+    している例です。
+
+	sugiyama:earth % imagedispserver &
+	sugiyama:earth % myprogram
+		....
+	と、imagedisp を起動して、研究している…。
+
+	takahiro:venus % xrlogin earth
+	takahiro:earth % imagedispserver &
+	takahiro:earth % hisprogram
+		...
+
+	takahiro>出たり出なかったり？？？
+	sugiyama>余分な window がでてきたぞぉ？
+
+
+    例２
+	server を切られた。
+
+	sugiyama:earth % imagedispserver &
+	sugiyama:earth % myprogram
+		....
+	と、imagedisp を起動して、研究している…。
+
+	takahiro:venus % xrlogin earth
+	takahiro> そういえば、この前は、競合してうまくいかなかったから、
+		  今度はちゃんと、server を切ってから始めよう！
+	takahiro:earth % imagedispserver -r   … サーバを解除
+	takahiro:earth % imagedispserver &
+	takahiro:earth % hisprogram
+		...
+
+	takahiro>うまくいった！
+	sugiyama>突然、エラーメッセージが出てきたぞ…。
+	sugiyama>プログラムは動いてるけど何も表示されなくなった。
+	takahiro>でも、なんか関係ない window が出てきた。
+
+
+    例３
+	DISPLAY が共有できないので、混乱した例。
+
+	sugiyama:earth % imagedispserver &
+	sugiyama:earth % myprogram
+		....
+	と、imagedisp を起動して、研究している…。
+
+	takahiro:venus % xrlogin earth
+	takahiro> そういえば、この前は、server 切って sugiyama に迷惑
+		 をかけたから、今度はちゃんと確かめてと、
+	takahiro:earth % ps aux | imagedispserver
+		sugiyama 10598  0.0  0.0   48    0 ?  IW   Sep 29  0:00 imagedispserver
+	takahiro>やってるやってる。サーバが動いているからＯＫだな。
+
+	takahiro:earth % hisprogram
+		...
+
+	takahiro>なにも出てこない…。
+	sugiyama>なんか関係ない window が出てきた(まただ…)。
+
+	CIL> 現在のサーバではこういったのには、対処できません。
+
+
+  こういった状況において、対処していません。ごめんなさい。「自分のマシ
+ンだけでいいじゃないか」という人は別にいいのですが、表示は遅いしCPUを
+結構食うから別のマシンに任せたいときに、注意しなければなりません。でも、
+そのマシンで他の人が imagedispserver を使っていなかったら、ＯＫです。
+  じきに、対処しなければ…。（使用はできてる。だれか作って＞興味があって暇な人）
+
+  しかし、逆に、これを利用してしまうといいのです。（ちょっと他の人には
+迷惑だけど…）カラーを使う人は、lucifer で画像を見たいでしょう。でも、
+lucifer が使われていたら…。そんなとき、その人に、頼んで表示してもらい
+ますか？何度も何度もやりたいときはどうしますか？迷惑ですね。そういうと
+きは、すこしだけ window のスペースを借りまして、その人に 
+imagedispserver を起動してもらいます。（自分で起動してもいいけど他人の
+window環境を使うのはＸのセキュリティに違反するのでやめよう。Solarisで
+はできなくなっている。）これで、準備はできました。
+  あとは、プログラムを rlogin して lucifer で起動します。lucifer に 
+imagedisp は表示されます。最初だけ表示してもらいましょう。
+
+  lucifer でプログラムを動かすと lucifer を使っている人に迷惑ですね。
+と思った時は、そのひとに頼んで、自分の machine で、その人に入ってもら
+い、DISPLAY を lucifer に設定して、imagedispserver を起動してもらう。
+そうすれば、自分の machine でプログラムを起動すれば lucifer に出ます。
+
+  まぁ、こんなことしなくても、素直にかわってもらいましょう。

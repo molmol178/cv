@@ -1,0 +1,155 @@
+#include "Xw/Xw.h"
+
+
+
+#include "Bitmap/Title.c"
+
+#include "Bitmap/Box.c"
+#include "Bitmap/Circle1.c"
+#include "Bitmap/Circle2.c"
+#include "Bitmap/Circle3.c"
+#include "Bitmap/Circle4.c"
+#include "Bitmap/Close.c"
+#include "Bitmap/Copy.c"
+#include "Bitmap/Ellipse1.c"
+#include "Bitmap/Ellipse2.c"
+#include "Bitmap/FillBox.c"
+#include "Bitmap/FillCircle1.c"
+#include "Bitmap/FillCircle2.c"
+#include "Bitmap/FillCircle3.c"
+#include "Bitmap/FillCircle4.c"
+#include "Bitmap/FillEllipse1.c"
+#include "Bitmap/FillEllipse2.c"
+#include "Bitmap/FillPoly.c"
+#include "Bitmap/Line.c"
+#include "Bitmap/Lines.c"
+#include "Bitmap/Poly.c"
+#include "Bitmap/Point.c"
+#include "Bitmap/Points.c"
+#include "Bitmap/StoreArea.c"
+#include "Bitmap/Zoom.c"
+
+/*
+ * Pen
+ */
+#include "Bitmap/Set.c"
+#include "Bitmap/Max.c"
+#include "Bitmap/Min.c"
+#include "Bitmap/Mean.c"
+#include "Bitmap/Add.c"
+#include "Bitmap/Sub.c"
+#include "Bitmap/Not.c"
+#include "Bitmap/And.c"
+#include "Bitmap/Or.c"
+#include "Bitmap/Xor.c"
+#include "Bitmap/Diff.c"
+
+#include "Bitmap/Diffusion.c"
+#include "Bitmap/Strength.c"
+
+#include "Bitmap/Bit1.c"
+#include "Bitmap/BoxShape.c"
+#include "Bitmap/CircleShape.c"
+#include "Bitmap/Dots.c"
+#include "Bitmap/False.c"
+#include "Bitmap/Function.c"
+#include "Bitmap/Select.c"
+#include "Bitmap/Posi.c"
+#include "Bitmap/Nega.c"
+#include "Bitmap/Shape.c"
+#include "Bitmap/Size.c"
+#include "Bitmap/True.c"
+#include "Bitmap/UChar.c"
+#include "Bitmap/UChar3.c"
+
+/*
+ * buffer
+ */
+#include "Bitmap/Kill.c"
+
+/*
+ * edit
+ */
+#include "Bitmap/edit/Clear.c"
+#include "Bitmap/edit/Create.c"
+#include "Bitmap/edit/Fill.c"
+#include "Bitmap/edit/Redraw.c"
+#include "Bitmap/edit/Resize1.c"
+#include "Bitmap/edit/Resize2.c"
+#include "Bitmap/edit/Store.c"
+#include "Bitmap/edit/Swap.c"
+#include "Bitmap/edit/UnZoom.c"
+#include "Bitmap/edit/Undo.c"
+
+#include "Bitmap/edit/panel/Angle.c"
+#include "Bitmap/edit/panel/Cross.c"
+#include "Bitmap/edit/panel/Gradation.c"
+#include "Bitmap/edit/panel/Gravity.c"
+#include "Bitmap/edit/panel/Gravity0.c"
+#include "Bitmap/edit/panel/Gravity1.c"
+#include "Bitmap/edit/panel/Gravity2.c"
+#include "Bitmap/edit/panel/Gravity3.c"
+#include "Bitmap/edit/panel/Gravity4.c"
+#include "Bitmap/edit/panel/Gravity5.c"
+#include "Bitmap/edit/panel/Gravity6.c"
+#include "Bitmap/edit/panel/Gravity7.c"
+#include "Bitmap/edit/panel/Gravity8.c"
+#include "Bitmap/edit/panel/Grid.c"
+#include "Bitmap/edit/panel/Snap.c"
+#include "Bitmap/edit/panel/GridSize.c"
+#include "Bitmap/edit/panel/ImageSize.c"
+#include "Bitmap/edit/panel/ImageType.c"
+#include "Bitmap/edit/panel/LeftRot.c"
+#include "Bitmap/edit/panel/Off.c"
+#include "Bitmap/edit/panel/On.c"
+#include "Bitmap/edit/panel/RightLeft.c"
+#include "Bitmap/edit/panel/RightRot.c"
+#include "Bitmap/edit/panel/RotAny.c"
+#include "Bitmap/edit/panel/Rotation.c"
+#include "Bitmap/edit/panel/Shift.c"
+#include "Bitmap/edit/panel/Step.c"
+#include "Bitmap/edit/panel/UpDown.c"
+#include "Bitmap/edit/panel/WindowScale.c"
+
+/*
+ * main
+ */
+#include "Bitmap/main/Buffer.c"
+#include "Bitmap/main/Draw.c"
+#include "Bitmap/main/Info.c"
+#include "Bitmap/main/Load.c"
+#include "Bitmap/main/Pen.c"
+#include "Bitmap/main/Quit.c"
+#include "Bitmap/main/Save.c"
+#include "Bitmap/main/View.c"
+#include "Bitmap/main/Edit.c"
+
+#include "Bitmap/format/C2D.c"
+#include "Bitmap/format/GIF.c"
+#include "Bitmap/format/J4.c"
+#include "Bitmap/format/JPEG.c"
+#include "Bitmap/format/PNM.c"
+#include "Bitmap/format/TIFF.c"
+#include "Bitmap/format/Xw.c"
+
+#include "Bitmap/typename/Bit1Type.c"
+#include "Bitmap/typename/UChar3Type.c"
+#include "Bitmap/typename/UCharType.c"
+
+#include "Bitmap/file/Message.c"
+#include "Bitmap/file/Comment.c"
+#include "Bitmap/file/Filename.c"
+#include "Bitmap/file/Format.c"
+#include "Bitmap/file/Type.c"
+
+/*
+ * array
+ */
+#include "Bitmap/array/RightUpArray.c"
+#include "Bitmap/array/RightDownArray.c"
+#include "Bitmap/array/LeftUpArray.c"
+#include "Bitmap/array/LeftDownArray.c"
+#include "Bitmap/array/UpArray.c"
+#include "Bitmap/array/DownArray.c"
+#include "Bitmap/array/LeftArray.c"
+#include "Bitmap/array/RightArray.c"
