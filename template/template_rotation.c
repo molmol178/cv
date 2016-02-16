@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-double calc_similarity(image input,int x,int y, image template);
+float calc_similarity(image input,int x,int y, image template);
 void draw_rectangle(image peak ,int x, int y, image template);
 
 void image_calc_similarity(image input,image template,image similarity)
@@ -12,7 +12,7 @@ void image_calc_similarity(image input,image template,image similarity)
 	int x,y,tx,ty;
 	int xsize,ysize;
 	int xsizet,ysizet;
-	double sim;
+	float sim;
 	int angle;
 
 	xsize = Image.xsize(input);
@@ -30,11 +30,11 @@ void image_calc_similarity(image input,image template,image similarity)
 }
 
  
-double calc_similarity(image input,int x,int y, image template){
+float calc_similarity(image input,int x,int y, image template){
 	int tx,ty,angle;
-	double simit,simii,simtt ,simi,simt;
+	float simit,simii,simtt ,simi,simt;
 	int xsizet,ysizet;
-	double normalize_sim;	
+	float normalize_sim;	
 
 	simi = 0;
 	simt = 0;
@@ -98,7 +98,7 @@ void detect_peak(image peak ,image similarity , image template){
 	}
 }
 */
-void detect_peak_3d(image peak ,image *similarity , image template){
+void detect_peak_3d(image input ,image *similarity , image template){
 
 	int x,y;
 	int xsize,ysize;
@@ -116,17 +116,22 @@ void detect_peak_3d(image peak ,image *similarity , image template){
 	for(angle = 91; angle < 360 - 90; angle += 90){
 		for (y = 1; y < ysize - 1; y++){
 			for (x = 1; x < xsize - 1; x++){
-					P0 = __PIXEL(similarity[angle], x, y, float);
+					P0 = __PIXEL(similarity[angle], x, y ,float);
 					P1 = __PIXEL(similarity[angle], x+1, y, float);
 					P2 = __PIXEL(similarity[angle], x, y-1, float);
 					P3 = __PIXEL(similarity[angle], x-1, y, float);
 					P4 = __PIXEL(similarity[angle], x, y+1, float);
 					P5 = __PIXEL(similarity[angle+90],x ,y ,float);
 					P6 = __PIXEL(similarity[angle-90],x ,y ,float);
-				if ( P0 > P1 && P0 > P2 && P0 > P3 && P0 > P4 && P0 > P5 && P0 > P6){
-					__PIXEL(peak ,x ,y , bit1) = 1;
-					draw_rectangle(peak,x,y,template);
-				}
+
+					printf("angle = %d\n",angle);
+					printf("P0 = %f\n" , P0);
+					if( 0.86 > P0 && P0 > 0.83){
+						if ( P0 > P1 && P0 > P2 && P0 > P3 && P0 > P4 && P0 > P5 && P0 > P6){
+							__PIXEL(input ,x ,y , uchar) = 0;
+							draw_rectangle(input,x,y,template);
+						}
+					}
 			}
 		}
 	}
@@ -149,10 +154,10 @@ void draw_rectangle(image paper, int x, int y, image template){
 				  if (ty == 0 || ty == ysizet || tx == 0 || tx == xsizet){
 					 	if ( x + tx < xsize && y + ty < ysize){
 							// printf("drawrectangle\n");
-							__PIXEL(paper, x + tx, y + ty ,bit1) = 1;
+							__PIXEL(paper, x + tx, y + ty ,uchar) = 0;
 				  		}
 				  }
-		 	}
+			}
 	}
 }
 
@@ -195,7 +200,7 @@ int main (argc,argv)
 		fprintf(stderr,"out loop");
 	}
 
-	detect_peak_3d(peak,similarity,template);
+	detect_peak_3d(input,similarity,template);
 	
 	Image.destroy(template);
 	
@@ -203,7 +208,7 @@ int main (argc,argv)
 		Image.destroy(similarity[angle]);
 	}
 	
-	Image.save(peak, "outpeak.c2d" , "outpeak");
+	Image.save(input, "outpeak.c2d" , "outpeak");
 	Image.destroy(input);
 	Image.destroy(peak);
 }
