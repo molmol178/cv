@@ -55,9 +55,9 @@ float calc_similarity(image input,int x,int y, image template){
 				simi  += __PIXEL(input , x + tx ,y + ty ,uchar);
 				simt  += __PIXEL(template ,tx ,ty ,uchar);
 
-      // simit += __PIXEL(template , tx ,ty ,uchar) * __PIXEL(input ,x +tx ,y +ty ,uchar);
-      // simii += __PIXEL(input ,x + tx ,y + ty ,uchar) * __PIXEL(input ,x + tx , y + ty, uchar);
-      // simtt += __PIXEL(template ,tx ,ty ,uchar) * __PIXEL(template ,tx ,ty ,uchar);
+      //simit += __PIXEL(template , tx ,ty ,uchar) * __PIXEL(input ,x +tx ,y +ty ,uchar);
+      //simii += __PIXEL(input ,x + tx ,y + ty ,uchar) * __PIXEL(input ,x + tx , y + ty, uchar);
+      //simtt += __PIXEL(template ,tx ,ty ,uchar) * __PIXEL(template ,tx ,ty ,uchar);
         }
 		}
 	}
