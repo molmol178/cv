@@ -55,11 +55,17 @@ float calc_similarity(image input,int x,int y, image template){
 				simtt += __PIXEL(template ,tx ,ty ,uchar) * __PIXEL(template ,tx ,ty ,uchar);
 				simi  += __PIXEL(input , x + tx ,y + ty ,uchar);
 				simt  += __PIXEL(template ,tx ,ty ,uchar);
-			}
+
+      // simit += __PIXEL(template , tx ,ty ,uchar) * __PIXEL(input ,x +tx ,y +ty ,uchar);
+      // simii += __PIXEL(input ,x + tx ,y + ty ,uchar) * __PIXEL(input ,x + tx , y + ty, uchar);
+      // simtt += __PIXEL(template ,tx ,ty ,uchar) * __PIXEL(template ,tx ,ty ,uchar);
+        }
 		}
 	}
 	normalize_sim =  (tx * ty * simit - simi * simt) /  sqrt (((tx * ty * simii) - (simi * simi)) * ((tx * ty * simtt) - (simt * simt)));
-	return normalize_sim;
+	//normalize_sim = fabs( simit / ( sqrt (simii) * sqrt (simtt) ));
+  return normalize_sim;
+
 }
 /*
 
@@ -108,7 +114,7 @@ void detect_peak_3d(image input ,image *similarity , image template){
 	int cx,cy;
 	int rectangle;
 
-	for(angle = 91; angle < 360 - 90; angle += 90){
+	for(angle = 1 + 10; angle < 360 - 10; angle += 10){
 		for (y = 1; y < ysize - 1; y++){
 			for (x = 1; x < xsize - 1; x++){
 					P0 = __PIXEL(similarity[angle], x, y, float);
@@ -116,23 +122,22 @@ void detect_peak_3d(image input ,image *similarity , image template){
 					P2 = __PIXEL(similarity[angle], x, y-1, float);
 					P3 = __PIXEL(similarity[angle], x-1, y, float);
 					P4 = __PIXEL(similarity[angle], x, y+1, float);
-					P5 = __PIXEL(similarity[angle+90],x ,y ,float);
-					P6 = __PIXEL(similarity[angle-90],x ,y ,float);
+					P5 = __PIXEL(similarity[angle+10],x ,y ,float);
+					P6 = __PIXEL(similarity[angle-10],x ,y ,float);
           P7 = __PIXEL(similarity[angle],x+1 ,y+1 ,float);
           P8 = __PIXEL(similarity[angle],x-1 ,y+1 ,float);
           P9 = __PIXEL(similarity[angle],x+1 ,y-1 ,float);
           P10 = __PIXEL(similarity[angle],x-1 ,y-1 ,float);
 
 				//printf("angle = %d\n",angle);
-				//printf("P0 = %f\n" , P0);
-
-          if(P0 < 0.85  && P0 > 0.84){
-                if ( P0 < P1 && P0 < P2 && P0 < P3 && P0 < P4 && P0 < P5 && P0 < P6 && P0 < P7 && P0 < P8 && P0 < P9 && P0 < P10){
-                  __PIXEL(input ,x ,y , uchar) = 0;
+           if ( P0 > P1 && P0 > P2 && P0 > P3 && P0 > P4 && P0 > P5 && P0 > P6 && P0 > P7 && P0 > P8 && P0 > P9 && P0 > P10){
+              // printf("P0 = %f\n" , P0);
+               if(P0 > 0.91){
+                 __PIXEL(input ,x ,y , uchar) = 0;
                   draw_rectangle(input,x,y,template);
                 }
           }
-			}
+      }
 		}
 	}
 }
@@ -179,7 +184,7 @@ int main (argc,argv)
 
   Image.make(peak , Bit1 ,xsize ,ysize);
 
-  for (angle = 1; angle < 360; angle += 90){
+  for (angle = 1; angle < 360; angle += 10){
 
     similarity[angle] = Image.create("similarity");
     Image.make(similarity[angle],Float,xsize,ysize);
@@ -203,7 +208,7 @@ int main (argc,argv)
 
   Image.destroy(template);
 
-  for (angle = 1;angle < 360; angle += 90){
+  for (angle = 1;angle < 360; angle += 10){
     Image.destroy(similarity[angle]);
 	}
 
