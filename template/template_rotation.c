@@ -47,7 +47,6 @@ float calc_similarity(image input,int x,int y, image template){
 
 	for(ty = 0; ty < ysizet; ty++){
 		for(tx = 0; tx < xsizet; tx++){
-		//	printf("calcsimilarity %d\n",ty);
 
       if (__PIXEL(template, tx ,ty ,uchar) < 255){
 				simit += __PIXEL(template , tx ,ty ,uchar) * __PIXEL(input ,x +tx ,y +ty ,uchar);
